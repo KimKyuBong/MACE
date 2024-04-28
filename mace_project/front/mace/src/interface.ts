@@ -1,15 +1,21 @@
 // types.ts 파일
-export interface Answer {
+export interface IAnswer {
     id: number;
     content: string;
     create_date: string;
   }
   
-  export interface Question {
+export interface IQuestion {
     id: number;
     subject: string;
     content: string;
     create_date: string;
-    answers: Answer[];
+    answers: IAnswer[];
   }
   
+export interface IErrorDetail {
+  detail: {
+    msg: string;
+ 
+  }
+}

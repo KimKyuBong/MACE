@@ -1,6 +1,6 @@
 # 날짜와 시간 관련 모듈 및 Pydantic의 BaseModel을 임포트
 import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 # 답변 스키마를 포함하는 모듈 임포트
 from domain.answer.answer_schema import Answer
 
@@ -11,3 +11,13 @@ class Question(BaseModel):
     content: str  # 질문의 내용
     create_date: datetime.datetime  # 질문의 생성 날짜
     answers: list[Answer] = []  # 이 질문에 대한 답변 목록
+
+class QuestionCreate(BaseModel):
+    subject: str
+    content: str
+
+    @field_validator('subject', 'content')
+    def not_empty(cls, v):
+        if not v or not v.strip():
+            raise ValueError('must not be empty')
+        return v

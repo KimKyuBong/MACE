@@ -1,3 +1,5 @@
+from datetime import datetime
+from domain.question.question_schema import QuestionCreate
 # Question 모델과 SQLAlchemy 세션 관리를 위한 임포트
 from models import Question
 from sqlalchemy.orm import Session
@@ -13,3 +15,11 @@ def get_question_list(db: Session):
 def get_question(db: Session, question_id: int):
     question = db.get(Question, question_id)  # 주어진 기본 키(id)로 질문을 검색
     return question
+
+
+def create_question(db:Session, question_create: QuestionCreate):
+    db_question = Question(subject=question_create.subject,
+                           content=question_create.content,
+                           create_date=datetime.now())
+    db.add(db_question)
+    db.commit()

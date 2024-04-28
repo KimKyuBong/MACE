@@ -1,6 +1,8 @@
 # FastAPI와 SQLAlchemy에서 필요한 모듈을 임포트
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+from starlette import status
+
 
 # 데이터베이스 세션을 가져오기 위한 함수 임포트
 from database import get_db
@@ -23,3 +25,7 @@ def question_list(db : Session = Depends(get_db)):
 def question_detail(question_id: int, db : Session = Depends(get_db)):
     question = question_crud.get_question(db, question_id=question_id)
     return question
+
+@router.post("/create", status_code=status.HTTP_204_NO_CONTENT)
+def question_create(_question_create: question_schema.QuestionCreate, db : Session = Depends(get_db)):
+    question_crud.create_question(db=db, question_create=_question_create)
