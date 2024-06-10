@@ -1,5 +1,5 @@
 import pytz
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel
 from bson import ObjectId
 import datetime
 

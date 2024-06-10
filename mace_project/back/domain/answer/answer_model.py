@@ -1,13 +1,12 @@
-from pydantic import Field, validator
+from pydantic import Field, field_validator
 import datetime
 from typing import List
-from bson import ObjectId
 from common import PyObjectId, CustomBaseModel
 
 class AnswerCreate(CustomBaseModel):
     content: str
 
-    @validator('content')
+    @field_validator('content')
     def not_empty(cls, v):
         if not v.strip():
             raise ValueError('Content cannot be empty')

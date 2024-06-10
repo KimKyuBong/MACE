@@ -2,9 +2,20 @@ from fastapi import FastAPI,WebSocket, WebSocketDisconnect
 from starlette.middleware.cors import CORSMiddleware
 from typing import List
 from websocket import manager 
-from database import Database
+from database.db import get_db, Database
+from contextlib import asynccontextmanager
+
 
 app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await Database.connect()
+    yield
+    await Database.disconnect()
+
+app = FastAPI(lifespan=lifespan)
+
 
 # CORS 설정
 origins = ["*"]
@@ -15,14 +26,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-@app.on_event("startup")
-async def startup_db_client():
-    await Database.connect()
-
-@app.on_event("shutdown")
-async def shutdown_db_client():
-    await Database.disconnect()
 
 # 도메인별 라우터
 from domain.answer import answer_router
