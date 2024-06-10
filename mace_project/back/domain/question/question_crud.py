@@ -1,7 +1,7 @@
 from datetime import datetime
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from bson import ObjectId
-from models import QuestionCreate, Question, Answer
+from .question_model import QuestionCreate, Question, Answer
 import json
 
 async def create_question(db: AsyncIOMotorDatabase, question_data: QuestionCreate):

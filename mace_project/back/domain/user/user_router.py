@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from .user_crud import create_user, authenticate_user, create_access_token
-from models import UserCreate, UserLogin
+from .user_model import UserCreate, UserLogin
 from datetime import timedelta
 from database import get_db
 

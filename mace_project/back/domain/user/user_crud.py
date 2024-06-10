@@ -1,6 +1,6 @@
 import bcrypt
 from motor.motor_asyncio import AsyncIOMotorDatabase
-from models import UserCreate, User
+from .user_model import UserCreate, User
 import jwt
 from datetime import datetime, timedelta
 

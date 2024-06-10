@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from motor.motor_asyncio import AsyncIOMotorDatabase
-from models import QuestionCreate, Question
+from .question_model import QuestionCreate, Question
 from database import get_db
 from websocket import manager
 import logging
