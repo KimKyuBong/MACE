@@ -1,5 +1,6 @@
 from fastapi import WebSocket, WebSocketDisconnect
 import logging
+from typing import Dict, List
 
 class ConnectionManager:
     def __init__(self):
@@ -31,4 +32,3 @@ class ConnectionManager:
             logging.info(f"WebSocket disconnected from {room_id}")
 
 manager = ConnectionManager()
-

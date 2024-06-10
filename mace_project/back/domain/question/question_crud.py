@@ -1,7 +1,8 @@
 from datetime import datetime
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from bson import ObjectId
-from models import QuestionCreate, AnswerCreate, Question, Answer
+from models import QuestionCreate, Question, Answer
+import json
 
 async def create_question(db: AsyncIOMotorDatabase, question_data: QuestionCreate):
     new_question = question_data.dict()
@@ -33,3 +34,19 @@ async def get_question_detail(db: AsyncIOMotorDatabase, question_id: str):
     answers = await db["answers"].find({"question_id": question_id_obj}).to_list(None)
     question["answers"] = answers
     return question
+
+def prepare_broadcast_data(question, event_type):
+    """Prepare data for broadcasting new questions."""
+    return {
+        "type": event_type,
+        "data": {
+            "id": str(question["_id"]),
+            "subject": question["subject"],
+            "create_date": question["create_date"].strftime("%Y-%m-%d %H:%M:%S")
+        }
+    }
+
+async def broadcast_question(manager, question, event_type, room_id):
+    broadcast_data = prepare_broadcast_data(question, event_type)
+    json_data = json.dumps(broadcast_data, default=str)
+    await manager.broadcast(json_data, room_id)
