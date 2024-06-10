@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+pymongo
+sqlalchemy
+motor
+pydantic
+pydantic-settings
+pytz
+PyJWT
+passlib
+bcrypt

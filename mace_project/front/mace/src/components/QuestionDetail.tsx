@@ -13,7 +13,7 @@ function QuestionDetail() {
   const { id } = useParams<{ id: string }>();
   const [question, setQuestion] = useState<IQuestion | undefined>();
   const [answer, setAnswer] = useState<string>('');
-  const [error, setError] = useState<IErrorDetail>({detail: {msg: ''}});
+  const [error, setError] = useState<IErrorDetail>({ detail: { msg: '' } });
 
   useEffect(() => {
     getQuestion();
@@ -30,15 +30,15 @@ function QuestionDetail() {
     if (answer.trim() === '') {
       setError({ detail: { msg: 'Answer cannot be blank' } });
     } else {
-      fastapi("post", `/api/answer/create/${id}`, { content: answer }, 
-      (json: IQuestion) => {
-        console.log("답변 등록 성공:", json);
-        setAnswer('');
-        getQuestion();
-      },(err_json: IErrorDetail) => {
-        setError(err_json);
-        console.log("답변 등록 실패:", err_json);
-      })
+      fastapi("post", `/api/answer/create/${id}`, { content: answer },
+        (json: IAnswer) => {
+          console.log("답변 등록 성공:", json);
+          setAnswer('');
+          getQuestion();
+        }, (err_json: IErrorDetail) => {
+          setError(err_json);
+          console.log("답변 등록 실패:", err_json);
+        })
     }
   };
 
@@ -52,7 +52,7 @@ function QuestionDetail() {
             {question.answers.length} 개 의 답 변 이 있 습 니 다 .
           </h5>
           {question.answers.map((answer: IAnswer) => (
-            <div key={answer.id} className="card my-3">
+            <div key={answer._id} className="card my-3">
               <ReactQuill value={answer.content} readOnly={true} theme={"snow"} modules={{ toolbar: false }} />
             </div>
           ))}
@@ -61,7 +61,7 @@ function QuestionDetail() {
             <div className="mb-3">
               <ReactQuill value={answer} onChange={setAnswer} theme={"snow"} modules={{ toolbar: ['bold', 'italic', 'underline', 'strike', 'formula'] }} />
             </div>
-            <input type="submit" value=" 답 변 등 록 " className="btn btn-primary"/>
+            <input type="submit" value=" 답 변 등 록 " className="btn btn-primary" />
           </form>
         </>
       ) : (

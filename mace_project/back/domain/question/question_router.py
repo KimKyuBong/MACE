@@ -1,31 +1,69 @@
-# FastAPI와 SQLAlchemy에서 필요한 모듈을 임포트
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
-from starlette import status
-
-
-# 데이터베이스 세션을 가져오기 위한 함수 임포트
+from fastapi import APIRouter, Depends, HTTPException, status
+from motor.motor_asyncio import AsyncIOMotorDatabase
+from bson import ObjectId
+from models import QuestionCreate, Question
 from database import get_db
-# 질문 스키마와 CRUD 작업을 포함하는 모듈 임포트
-from domain.question import question_schema, question_crud
+from websocket import manager
+import json
+import logging
+from typing import List
+from .question_crud import create_question, update_question, delete_question, get_question_detail
 
-# API 라우터 설정, '/api/question'을 기본 URL 접두어로 사용
-router = APIRouter(
-    prefix="/api/question",
-)
+logging.basicConfig(level=logging.INFO)
 
-# 질문 목록을 반환하는 API 엔드포인트
-@router.get("/list", response_model=list[question_schema.Question])
-def question_list(db : Session = Depends(get_db)):
-    _question_list = question_crud.get_question_list(db)
-    return _question_list
+router = APIRouter(prefix="/api/question")
 
-# 특정 질문의 상세 정보를 반환하는 API 엔드포인트
-@router.get("/detail/{question_id}", response_model=question_schema.Question)
-def question_detail(question_id: int, db : Session = Depends(get_db)):
-    question = question_crud.get_question(db, question_id=question_id)
+
+def prepare_broadcast_data(question, event_type):
+    """Prepare data for broadcasting new questions."""
+    return {
+        "type": event_type,
+        "data": {
+            "id": str(question["_id"]),
+            "subject": question["subject"],
+            "create_date": question["create_date"].strftime("%Y-%m-%d %H:%M:%S")
+        }
+    }
+
+
+@router.get("/list", response_model=List[Question])
+async def question_list(db: AsyncIOMotorDatabase = Depends(get_db)):
+    questions = await db["questions"].find().to_list(100)
+    return [Question(**question) for question in questions]
+
+
+@router.get("/detail/{question_id}", response_model=Question)
+async def question_detail(question_id: str, db: AsyncIOMotorDatabase = Depends(get_db)):
+    question = await get_question_detail(db, question_id)
+    if not question:
+        raise HTTPException(status_code=404, detail="Question not found")
     return question
 
-@router.post("/create", status_code=status.HTTP_204_NO_CONTENT)
-def question_create(_question_create: question_schema.QuestionCreate, db : Session = Depends(get_db)):
-    question_crud.create_question(db=db, question_create=_question_create)
+@router.post("/create", status_code=status.HTTP_201_CREATED)
+async def question_create(question_data: QuestionCreate, db: AsyncIOMotorDatabase = Depends(get_db)):
+    new_question = await create_question(db, question_data)
+    broadcast_data = prepare_broadcast_data(new_question.dict(), "new_question")
+    json_data = json.dumps(broadcast_data)
+    await manager.broadcast(json_data, "question")
+    logging.info("Question broadcasted successfully.")
+    return new_question
+
+
+@router.put("/update/{question_id}", response_model=Question)
+async def question_update(question_id: str, question_data: QuestionCreate, db: AsyncIOMotorDatabase = Depends(get_db)):
+    updated_question = await update_question(db, question_id, question_data)
+    broadcast_data = prepare_broadcast_data(updated_question.dict(), "updated_question")
+    json_data = json.dumps(broadcast_data)
+    await manager.broadcast(json_data, "question")
+    logging.info("Question updated and broadcasted successfully.")
+    return updated_question
+
+
+@router.delete("/delete/{question_id}", status_code=status.HTTP_200_OK)
+async def question_delete(question_id: str, db: AsyncIOMotorDatabase = Depends(get_db)):
+    deleted_question_id = await delete_question(db, question_id)
+    broadcast_data = {"type": "delete_question", "data": {"id": deleted_question_id}}
+    json_data = json.dumps(broadcast_data)
+    await manager.broadcast(json_data, "question")
+    logging.info("Delete event for question broadcasted successfully.")
+    return {"message": "Question deleted successfully"}

@@ -50,6 +50,7 @@ function QuestionCreate() {
           <label htmlFor="subject">제목</label>
           <input type="text" className="form-control" value={subject} onChange={e => setSubject(e.target.value)} id="subject" />
         </div>
+        
         <div className="mb-3">
           <label htmlFor="content">내용 (LaTeX 예: x^2)</label>
           <ReactQuill value={content} onChange={setContent} modules={modules} />

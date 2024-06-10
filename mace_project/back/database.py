@@ -1,19 +1,27 @@
-import contextlib
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from motor.motor_asyncio import AsyncIOMotorClient
+from pydantic_settings import BaseSettings
+import os
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./myapi.db"
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
-)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
+class Settings(BaseSettings):
+    db_url: str =  os.getenv("MONGO_DB_URL", "localhost")
+    db_name: str = "myapi"
 
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+settings = Settings()
+
+class Database:
+    client: AsyncIOMotorClient = None
+    db = None
+
+    @staticmethod
+    async def connect():
+        Database.client = AsyncIOMotorClient(settings.db_url)
+        Database.db = Database.client[settings.db_name]
+
+    @staticmethod
+    async def disconnect():
+        Database.client.close()
+        
+# Dependency
+async def get_db():
+    return Database.db

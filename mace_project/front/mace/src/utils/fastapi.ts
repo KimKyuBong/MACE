@@ -1,5 +1,7 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 
+// react-query<< 캐싱처리에 대한 부분 반영해볼 것
+
 // 매개변수와 콜백 함수들에 대한 타입을 정의합니다.
 type Operation = 'get' | 'post' | 'put' | 'delete';
 interface Params {

@@ -1,25 +1,35 @@
 from datetime import datetime
-from domain.question.question_schema import QuestionCreate
-# Question 모델과 SQLAlchemy 세션 관리를 위한 임포트
-from models import Question
-from sqlalchemy.orm import Session
+from motor.motor_asyncio import AsyncIOMotorDatabase
+from bson import ObjectId
+from models import QuestionCreate, AnswerCreate, Question, Answer
 
-# 질문 목록을 생성 날짜 내림차순으로 검색하는 함수
-def get_question_list(db: Session):
-    question_list = db.query(Question)\
-        .order_by(Question.create_date.desc())\
-        .all()  # 쿼리를 실행하고 모든 결과를 반환
-    return question_list
+async def create_question(db: AsyncIOMotorDatabase, question_data: QuestionCreate):
+    new_question = question_data.dict()
+    new_question["create_date"] = datetime.utcnow()
+    result = await db["questions"].insert_one(new_question)
+    new_question["_id"] = result.inserted_id
+    return new_question
 
-# 특정 ID를 가진 질문 하나를 검색하는 함수
-def get_question(db: Session, question_id: int):
-    question = db.get(Question, question_id)  # 주어진 기본 키(id)로 질문을 검색
+async def update_question(db: AsyncIOMotorDatabase, question_id: str, question_data: QuestionCreate):
+    question_id_obj = ObjectId(question_id)
+    updated_question = {
+        "subject": question_data.subject,
+        "content": question_data.content
+    }
+    await db["questions"].update_one({"_id": question_id_obj}, {"$set": updated_question})
+    updated_question["_id"] = question_id_obj
+    return updated_question
+
+async def delete_question(db: AsyncIOMotorDatabase, question_id: str):
+    question_id_obj = ObjectId(question_id)
+    await db["questions"].delete_one({"_id": question_id_obj})
+    return question_id_obj
+
+async def get_question_detail(db: AsyncIOMotorDatabase, question_id: str):
+    question_id_obj = ObjectId(question_id)
+    question = await db["questions"].find_one({"_id": question_id_obj})
+    if not question:
+        return None
+    answers = await db["answers"].find({"question_id": question_id_obj}).to_list(None)
+    question["answers"] = answers
     return question
-
-
-def create_question(db:Session, question_create: QuestionCreate):
-    db_question = Question(subject=question_create.subject,
-                           content=question_create.content,
-                           create_date=datetime.now())
-    db.add(db_question)
-    db.commit()
