@@ -2,6 +2,7 @@ from fastapi import WebSocket, WebSocketDisconnect
 import logging
 from typing import Dict, List
 
+
 class ConnectionManager:
     def __init__(self):
         self.active_connections: Dict[str, List[WebSocket]] = {}
@@ -12,23 +13,40 @@ class ConnectionManager:
             self.active_connections[room_id].append(websocket)
         else:
             self.active_connections[room_id] = [websocket]
+        logging.info(f"WebSocket connected to room {room_id}")
 
     def disconnect(self, websocket: WebSocket, room_id: str):
-        self.active_connections[room_id].remove(websocket)
+        if room_id in self.active_connections:
+            self.active_connections[room_id].remove(websocket)
+            if not self.active_connections[room_id]:
+                del self.active_connections[room_id]
+            logging.info(f"WebSocket disconnected from room {room_id}")
 
     async def broadcast(self, data: str, room_id: str):
+        logging.info(f"Broadcasting to room {room_id}: {data}")
         for connection in self.active_connections.get(room_id, []):
             await connection.send_text(data)
 
-    # 메시지 수신 로깅을 위한 메서드 추가
     async def receive_message(self, websocket: WebSocket, room_id: str):
         try:
             while True:
                 data = await websocket.receive_text()
-                logging.info(f"Received message from {room_id}: {data}")  # 메시지 로깅
-                # 추가적인 처리 작업이 필요할 경우 여기에 구현
+                logging.info(f"Received message from {room_id}: {data}")
         except WebSocketDisconnect:
             self.disconnect(websocket, room_id)
             logging.info(f"WebSocket disconnected from {room_id}")
 
 manager = ConnectionManager()
+
+
+
+def prepare_broadcast_data(question, event_type):
+    """Prepare data for broadcasting new questions."""
+    return {
+        "type": event_type,
+        "data": {
+            "id": str(question["_id"]),
+            "subject": question["subject"],
+            "create_date": question["create_date"].strftime("%Y-%m-%d %H:%M:%S")
+        }
+    }

@@ -6,7 +6,7 @@ import useWebSocket from '../hooks/useWebSocket';
 
 function Home() {
   const [questions, setQuestions] = useState<IQuestion[]>([]);
-  const { lastMessage, isConnected } = useWebSocket('ws://192.168.1.105:8000/ws/question');
+  const { lastMessage, isConnected } = useWebSocket('wss://mace.kbnet.kr/ws/question');
 
   useEffect(() => {
     fetchQuestions();

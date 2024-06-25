@@ -32,15 +32,3 @@ async def delete_answer(db: AsyncIOMotorDatabase, answer_id: str):
     await db["answers"].delete_one({"_id": answer_id_obj})
     logging.info(f"Deleted answer with id: {answer_id_obj}")
     return answer_id_obj
-
-def prepare_broadcast_data(answer, event_type):
-    """ Prepare data for broadcasting answers. """
-    return {
-        "type": event_type,
-        "data": {
-            "id": str(answer["_id"]),
-            "content": answer["content"],
-            "create_date": answer["create_date"].isoformat(),
-            "question_id": str(answer["question_id"])
-        }
-    }

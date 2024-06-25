@@ -1,7 +1,7 @@
 from motor.motor_asyncio import AsyncIOMotorDatabase
-from .answer_crud import create_answer, update_answer, delete_answer, prepare_broadcast_data
+from .answer_crud import create_answer, update_answer, delete_answer
 from .answer_model import AnswerCreate, Answer
-from websocket import manager
+from websocket import *
 import logging
 import json
 from fastapi.encoders import jsonable_encoder
@@ -12,7 +12,7 @@ async def create_answer_service(db: AsyncIOMotorDatabase, question_id: str, answ
         broadcast_data = prepare_broadcast_data(new_answer, "new_answer")
         await manager.broadcast(json.dumps(broadcast_data), f'question_{question_id}')
         logging.info("Answer created and broadcasted successfully.")
-        return jsonable_encoder(new_answer)
+        return jsonable_encoder(broadcast_data)
     except Exception as e:
         logging.error(f"Failed to create answer: {str(e)}")
         raise Exception("Failed to create answer")
@@ -23,7 +23,7 @@ async def update_answer_service(db: AsyncIOMotorDatabase, answer_id: str, answer
         broadcast_data = prepare_broadcast_data(updated_answer, "updated_answer")
         await manager.broadcast(json.dumps(broadcast_data), f'question_{str(updated_answer["question_id"])}')
         logging.info("Answer updated and broadcasted successfully.")
-        return jsonable_encoder(updated_answer)
+        return jsonable_encoder(broadcast_data)
     except Exception as e:
         logging.error(f"Failed to update answer: {str(e)}")
         raise Exception("Failed to update answer")
