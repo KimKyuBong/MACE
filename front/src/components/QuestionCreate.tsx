@@ -35,7 +35,7 @@ function QuestionCreate() {
 
     try {
       await fastapi("post", url, params);
-      navigate("/");
+      navigate("/questionlist");
     } catch (json_error) {
       setError({ detail: { msg: "An unexpected error occurred" } });
     }

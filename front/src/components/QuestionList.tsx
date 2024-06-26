@@ -4,7 +4,7 @@ import fastapi from '../utils/fastapi';
 import { IQuestion } from '../interface';
 import useWebSocket from '../hooks/useWebSocket';  
 
-function Home() {
+function QuestionList() {
   const [questions, setQuestions] = useState<IQuestion[]>([]);
   const { lastMessage, isConnected } = useWebSocket('wss://mace.kbnet.kr/ws/question');
 
@@ -17,15 +17,15 @@ function Home() {
       const messageData = lastMessage.data; // 메시지 데이터 추출
       const message = typeof messageData === 'string' ? JSON.parse(messageData) : messageData; // JSON 형식으로 파싱
       console.log(message);
-      switch(message.type) {
+      switch(lastMessage.type) {
         case 'new_question':
-          addNewQuestion(message.data);
+          addNewQuestion(message);
           break;
         case 'delete_question':
-          deleteQuestion(message.data._id);
+          deleteQuestion(message._id);
           break;
         case 'update_question':
-          updateQuestion(message.data);
+          updateQuestion(message);
           break;
         default:
           break;
@@ -56,7 +56,7 @@ function Home() {
   };
 
   const addNewQuestion = (newQuestion: IQuestion) => {
-    setQuestions(prevQuestions => [newQuestion, ...prevQuestions]);
+    setQuestions(prevQuestions => [...prevQuestions, newQuestion]);
   };
 
   const deleteQuestion = (id: string) => { // id 타입을 string으로 변경
@@ -94,4 +94,4 @@ function Home() {
   );
 }
 
-export default Home;
+export default QuestionList;

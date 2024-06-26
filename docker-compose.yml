@@ -17,6 +17,8 @@ services:  # 실행할 서비스 목록을 정의
     container_name: mace_back
     depends_on:
       - db
+    ports:
+      - 8000:8000
     environment:
       - MONGO_DB_URL=mongodb://root:betterthendesmos@db:27017
     volumes:
@@ -43,7 +45,7 @@ services:  # 실행할 서비스 목록을 정의
       - '80:80' # 포트 매핑
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf # Nginx 설정 파일을 로컬 디렉토리와 공유
-      # - ./front/build:/usr/share/nginx/html
+      - ./front/build:/usr/share/nginx/html
     depends_on:
       - back
       - front

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 interface WebSocketMessage {
   type: string;
@@ -7,15 +7,19 @@ interface WebSocketMessage {
 
 function useWebSocket(url: string): { socket: WebSocket | null, lastMessage: WebSocketMessage | null, isConnected: boolean } {
   const [socket, setSocket] = useState<WebSocket | null>(null);
-  const [lastMessage, setLastMessage] = useState(null);
+  const [lastMessage, setLastMessage] = useState<WebSocketMessage | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const reconnectAttempts = useRef(0);
+  const maxReconnectAttempts = 5;
+  const reconnectDelay = 3000; // 3 seconds
 
-  useEffect(() => {
+  const connect = useCallback(() => {
     const ws = new WebSocket(url);
 
     ws.onopen = () => {
       console.log("Connected to WebSocket");
       setIsConnected(true);
+      reconnectAttempts.current = 0; // Reset reconnect attempts on successful connection
     };
 
     ws.onerror = (error) => {
@@ -35,14 +39,26 @@ function useWebSocket(url: string): { socket: WebSocket | null, lastMessage: Web
     ws.onclose = () => {
       console.log("Disconnected from WebSocket");
       setIsConnected(false);
+
+      if (reconnectAttempts.current < maxReconnectAttempts) {
+        setTimeout(() => {
+          reconnectAttempts.current += 1;
+          connect();
+        }, reconnectDelay);
+      }
     };
 
     setSocket(ws);
-
-    return () => {
-      ws.close();
-    };
   }, [url]);
+
+  useEffect(() => {
+    connect();
+    return () => {
+      if (socket) {
+        socket.close();
+      }
+    };
+  }, [connect]);
 
   return { socket, lastMessage, isConnected };
 }

@@ -4,7 +4,7 @@ from typing import List
 from websocket import manager 
 from database.db import get_db, Database
 from contextlib import asynccontextmanager
-
+import logging
 
 app = FastAPI()
 
@@ -36,6 +36,7 @@ app.include_router(question_router.router)
 app.include_router(answer_router.router)
 app.include_router(user_router.router)
 
+
 # 웹소켓 엔드포인트
 @app.websocket("/ws/{room_id}")
 async def websocket_endpoint(websocket: WebSocket, room_id: str):
@@ -43,9 +44,14 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str):
     try:
         while True:
             data = await websocket.receive_text()
+            logging.info(f"Received data: {data} from room: {room_id}")
             await manager.broadcast(f"Room {room_id}: {data}", room_id)
     except WebSocketDisconnect:
         manager.disconnect(websocket, room_id)
+        logging.info(f"WebSocket disconnected from room: {room_id}")
     except Exception as e:
-        print(f"Unexpected error: {e}")  # 추가: 일반 예외 처리
-        # 웹소켓 연결 종료 시 필요한 추가 작업 수행
+        logging.error(f"Unexpected error: {e}")  # 추가: 일반 예외 처리
+
+
+
+logging.basicConfig(level=logging.INFO)

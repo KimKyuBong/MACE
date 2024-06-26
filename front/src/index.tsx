@@ -12,9 +12,9 @@ const root = ReactDOM.createRoot(rootElement);
 
 // React.StrictMode를 사용하여 App 컴포넌트 렌더링
 root.render(
-  <React.StrictMode>
+  // <React.StrictMode>
     <App />
-  </React.StrictMode>
+  // </React.StrictMode>
 );
 
 // 웹 바이탈즈 성능 측정을 위한 함수 호출
