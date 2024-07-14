@@ -1,12 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
-interface ErrorDetail {
-  detail: string | { msg: string };
-}
-
-interface ErrorProps {
-  error: ErrorDetail;
-}
+import { ErrorDetail, ErrorProps } from '../../interfaces/CommonInterfaces';
 
 const Error: React.FC<ErrorProps> = ({ error }) => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);

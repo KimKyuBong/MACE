@@ -1,11 +1,13 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 
-// react-query<< 캐싱처리에 대한 부분 반영해볼 것
-
 // 매개변수와 콜백 함수들에 대한 타입을 정의합니다.
 type Operation = 'get' | 'post' | 'put' | 'delete';
 interface Params {
   [key: string]: any;
+}
+
+interface RequestOptions {
+  headers?: { [key: string]: string };
 }
 
 const fastapi = (
@@ -13,28 +15,30 @@ const fastapi = (
   url: string,
   params: Params,
   success_callback?: (data?: any) => void,
-  failure_callback?: (error: any) => void
+  failure_callback?: (error: any) => void,
+  options?: RequestOptions
 ): void => {
   const method = operation;
   const baseUrl = process.env.REACT_APP_API_SERVER_URL; // 환경 변수 사용
   const _url = baseUrl + url;
 
   // AxiosRequestConfig 타입을 사용하여 options를 정의합니다.
-  const options: AxiosRequestConfig = {
+  const axiosOptions: AxiosRequestConfig = {
     method: method,
     url: _url,
     headers: {
-      "Content-Type": 'application/json'
+      "Content-Type": 'application/json',
+      ...options?.headers, // 추가 헤더를 병합
     },
   };
 
   if (method.toLowerCase() === 'get') {
-    options.params = params;
+    axiosOptions.params = params;
   } else {
-    options.data = params;
+    axiosOptions.data = params;
   }
 
-  axios(options)
+  axios(axiosOptions)
     .then((response: AxiosResponse) => {
       if (response.status === 204) {
         success_callback?.();

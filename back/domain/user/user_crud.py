@@ -1,7 +1,6 @@
 import bcrypt
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from .user_model import UserCreate
-from bson import ObjectId
 import logging
 
 async def create_user(db: AsyncIOMotorDatabase, user_data: UserCreate):

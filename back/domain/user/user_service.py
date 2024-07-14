@@ -1,9 +1,8 @@
-import bcrypt
-from motor.motor_asyncio import AsyncIOMotorDatabase
-from .user_crud import create_user, authenticate_user
-from .user_model import UserCreate
 import jwt
 from datetime import datetime, timedelta
+from motor.motor_asyncio import AsyncIOMotorDatabase
+from .user_crud import create_user, authenticate_user
+from .user_model import UserCreate, User
 import logging
 
 SECRET_KEY = "your-secret-key"
@@ -26,14 +25,18 @@ async def register_user_service(db: AsyncIOMotorDatabase, user_data: UserCreate)
         logging.error(f"Failed to create user: {str(e)}")
         raise Exception("Failed to create user")
 
-async def login_user_service(db: AsyncIOMotorDatabase, username: str, password: str):
+async def login_user_service(db: AsyncIOMotorDatabase, username: str, password: str) -> User:
     try:
         user = await authenticate_user(db, username, password)
         if not user:
             raise Exception("Invalid credentials")
+        
         access_token = create_access_token(data={"sub": user["username"]}, expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
-        logging.info("User authenticated successfully.")
-        return {"access_token": access_token, "token_type": "bearer"}
+        
+        user_dict = user.copy()
+        user_dict["token"] = access_token
+        
+        return User(**user_dict)
     except Exception as e:
         logging.error(f"Failed to authenticate user: {str(e)}")
         raise Exception("Failed to authenticate user")

@@ -31,6 +31,9 @@ services:  # 실행할 서비스 목록을 정의
     working_dir: /app
     volumes:
       - ./front:/app
+    environment:
+      - REACT_APP_API_SERVER_URL=https://mace.kbnet.kr
+      - REACT_APP_WEBSOCKET_SERVER_URL=wss://mace.kbnet.kr/ws
     command:
       - sh
       - -c

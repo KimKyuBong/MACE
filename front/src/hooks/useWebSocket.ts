@@ -1,18 +1,24 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useCookies } from 'react-cookie';
 
 interface WebSocketMessage {
   type: string;
   data: any;
 }
 
-function useWebSocket(url: string): { socket: WebSocket | null, lastMessage: WebSocketMessage | null, isConnected: boolean } {
+const DEFAULT_URL = process.env.REACT_APP_API_SERVER_URL
+
+
+function useWebSocket(path: string = ''): { socket: WebSocket | null, lastMessage: WebSocketMessage | null, isConnected: boolean } {
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [lastMessage, setLastMessage] = useState<WebSocketMessage | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const reconnectAttempts = useRef(0);
   const maxReconnectAttempts = 5;
   const reconnectDelay = 3000; // 3 seconds
+  const [cookies] = useCookies(['token']);
 
+  const url = `${DEFAULT_URL}${path}`;
   const connect = useCallback(() => {
     const ws = new WebSocket(url);
 
@@ -20,6 +26,7 @@ function useWebSocket(url: string): { socket: WebSocket | null, lastMessage: Web
       console.log("Connected to WebSocket");
       setIsConnected(true);
       reconnectAttempts.current = 0; // Reset reconnect attempts on successful connection
+      ws.send(JSON.stringify({ type: "auth", token: cookies.token }));
     };
 
     ws.onerror = (error) => {
@@ -49,7 +56,7 @@ function useWebSocket(url: string): { socket: WebSocket | null, lastMessage: Web
     };
 
     setSocket(ws);
-  }, [url]);
+  }, [url, cookies.token]);
 
   useEffect(() => {
     connect();

@@ -9,3 +9,4 @@ pytz
 PyJWT
 passlib
 bcrypt
+python-jose

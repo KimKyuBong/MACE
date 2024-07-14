@@ -1,21 +1,23 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import fastapi from "../utils/fastapi";
-import ErrorComponent from "../components/ErrorComponent";
-import { IErrorDetail } from '../interface';
+import React from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
+import { ErrorDetail } from 'interfaces/CommonInterfaces';
+import ErrorComponent from 'components/Common/ErrorComponent';
+
 window.katex = katex;
 
+interface QuestionFormProps {
+  subject: string;
+  content: string;
+  error: ErrorDetail;
+  setSubject: (value: string) => void;
+  setContent: (value: string) => void;
+  handleSubmit: (event: React.FormEvent) => void;
+}
 
-function QuestionCreate() {
-  const navigate = useNavigate();
-  const [error, setError] = useState<IErrorDetail>({detail: {msg: ''}});
-  const [subject, setSubject] = useState<string>('');
-  const [content, setContent] = useState<string>('');
-
+const QuestionForm: React.FC<QuestionFormProps> = ({ subject, content, error, setSubject, setContent, handleSubmit }) => {
   const modules = {
     toolbar: [
       ['bold', 'italic', 'underline', 'strike'],
@@ -23,29 +25,13 @@ function QuestionCreate() {
       ['image', 'code-block']
     ],
     formula: true, // Enable the formula module
-  }
-
-  const postQuestion = async (event: React.FormEvent) => {
-    event.preventDefault();
-    const url = "/api/question/create";
-    const params = {
-      subject: subject,
-      content: content,
-    };
-
-    try {
-      await fastapi("post", url, params);
-      navigate("/questionlist");
-    } catch (json_error) {
-      setError({ detail: { msg: "An unexpected error occurred" } });
-    }
   };
 
   return (
     <div className="container">
       <h5 className="my-3 border-bottom pb-2">질문 등록</h5>
       <ErrorComponent error={error} />
-      <form className="my-3" onSubmit={postQuestion}>
+      <form className="my-3" onSubmit={handleSubmit}>
         <div className="mb-3">
           <label htmlFor="subject">제목</label>
           <input type="text" className="form-control" value={subject} onChange={e => setSubject(e.target.value)} id="subject" />
@@ -59,6 +45,6 @@ function QuestionCreate() {
       </form>
     </div>
   );
-}
+};
 
-export default QuestionCreate;
+export default QuestionForm;

@@ -31,11 +31,20 @@ app.add_middleware(
 from domain.answer import answer_router
 from domain.question import question_router
 from domain.user import user_router
-
+from domain.classroom import classroom_router
 app.include_router(question_router.router)
 app.include_router(answer_router.router)
 app.include_router(user_router.router)
+app.include_router(classroom_router.router)
 
+@app.websocket("/ws/classroom")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            data = await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
 
 # 웹소켓 엔드포인트
 @app.websocket("/ws/{room_id}")
