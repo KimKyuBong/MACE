@@ -1,19 +1,34 @@
-import fastapi from 'utils/fastapi';
-import { Question, Answer, PostQuestionParams } from 'interfaces/QuestionInterfaces';
+import fastapi from '../utils/fastapi';
+import {
+  Question,
+  Answer,
+  PostQuestionParams,
+} from 'interfaces/QuestionInterfaces';
 
+export const postQuestion = async (
+  params: PostQuestionParams,
+  token: string
+) => {
+  const url = '/question/create';
+  return new Promise((resolve, reject) => {
+    fastapi(
+      'post',
+      url,
+      params,
+      token, // 토큰 포함
+      (data: any) => resolve(data),
+      (error: any) => reject(error)
+    );
+  });
+};
 
-export const postQuestion = async (params: PostQuestionParams) => {
-    const url = "/api/question/create";
-    return fastapi("post", url, params);
-  };
-
-
-export const fetchQuestions = async (): Promise<Question[]> => {
+export const fetchQuestions = async (token: string): Promise<Question[]> => {
   return new Promise<Question[]>((resolve, reject) => {
     fastapi(
       'get',
-      "/api/question/list",
+      '/question/list',
       {},
+      token, // 토큰 포함
       (data?: Question[]) => {
         if (data) {
           resolve(data);
@@ -30,22 +45,43 @@ export const fetchQuestions = async (): Promise<Question[]> => {
   });
 };
 
-export const getQuestionDetail = async (id: string): Promise<Question> => {
+export const getQuestionDetail = async (
+  id: string,
+  token: string
+): Promise<Question> => {
   return new Promise((resolve, reject) => {
-    fastapi("get", `/api/question/detail/${id}`, {}, (json: Question) => {
-      resolve(json);
-    }, (error: any) => {
-      reject(error);
-    });
+    fastapi(
+      'get',
+      `/question/detail/${id}`,
+      {},
+      token, // 토큰 포함
+      (json: Question) => {
+        resolve(json);
+      },
+      (error: any) => {
+        reject(error);
+      }
+    );
   });
 };
 
-export const postAnswer = async (questionId: string, content: string): Promise<Answer> => {
+export const postAnswer = async (
+  questionId: string,
+  content: string,
+  token: string
+): Promise<Answer> => {
   return new Promise((resolve, reject) => {
-    fastapi("post", `/api/answer/create/${questionId}`, { content }, (json: Answer) => {
-      resolve(json);
-    }, (error: any) => {
-      reject(error);
-    });
+    fastapi(
+      'post',
+      `/answer/create/${questionId}`,
+      { content },
+      token, // 토큰 포함
+      (json: Answer) => {
+        resolve(json);
+      },
+      (error: any) => {
+        reject(error);
+      }
+    );
   });
 };

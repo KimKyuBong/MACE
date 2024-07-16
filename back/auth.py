@@ -28,4 +28,4 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncIOMotor
     user = await db["users"].find_one({"username": username})
     if user is None:
         raise credentials_exception
-    return User(**user)
+    return User(**user, token=token)

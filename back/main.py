@@ -17,8 +17,9 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 
+
 # CORS 설정
-origins = ["*"]
+origins = ["https://mace.kbnet.kr"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -26,6 +27,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
 
 # 도메인별 라우터
 from domain.answer import answer_router
@@ -37,17 +40,8 @@ app.include_router(answer_router.router)
 app.include_router(user_router.router)
 app.include_router(classroom_router.router)
 
-@app.websocket("/ws/classroom")
-async def websocket_endpoint(websocket: WebSocket):
-    await manager.connect(websocket)
-    try:
-        while True:
-            data = await websocket.receive_text()
-    except WebSocketDisconnect:
-        manager.disconnect(websocket)
-
 # 웹소켓 엔드포인트
-@app.websocket("/ws/{room_id}")
+@app.websocket("/ws/{room_id}", "/ws")
 async def websocket_endpoint(websocket: WebSocket, room_id: str):
     await manager.connect(websocket, room_id)
     try:
@@ -60,7 +54,5 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str):
         logging.info(f"WebSocket disconnected from room: {room_id}")
     except Exception as e:
         logging.error(f"Unexpected error: {e}")  # 추가: 일반 예외 처리
-
-
 
 logging.basicConfig(level=logging.INFO)

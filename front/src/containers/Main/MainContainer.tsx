@@ -1,19 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import { useAuth } from 'hooks/useAuth';
+import { useAuth } from 'contexts/AuthContext';
 import ClassroomCreateForm from 'components/Classroom/ClassroomCreateForm';
 import ClassroomListContainer from 'containers/Classroom/ClassroomListContainer';
 import useWebSocket from 'hooks/useWebSocket';
+import { Link, useNavigate } from 'react-router-dom';
 
 const MainContainer: React.FC = () => {
   const { user, handleLogout } = useAuth();
   const { lastMessage, isConnected } = useWebSocket('/classrooms');
   const [notifications, setNotifications] = useState<string[]>([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (lastMessage) {
       setNotifications((prev) => [...prev, lastMessage.data]);
     }
   }, [lastMessage]);
+
+  const handleLoginClick = () => navigate('/login');
+  const handleRegisterClick = () => navigate('/register');
 
   return (
     <div className="container">
@@ -25,12 +30,27 @@ const MainContainer: React.FC = () => {
               <span className="navbar-text">
                 {user.username} ({user.role})
               </span>
-              <button className="btn btn-outline-danger ml-2" onClick={handleLogout}>Logout</button>
+              <button
+                className="btn btn-outline-danger ml-2"
+                onClick={handleLogout}
+              >
+                Logout
+              </button>
             </>
           ) : (
             <>
-              <button className="btn btn-outline-primary mr-2">Login</button>
-              <button className="btn btn-outline-secondary">Register</button>
+              <button
+                className="btn btn-outline-primary mr-2"
+                onClick={handleLoginClick}
+              >
+                Login
+              </button>
+              <button
+                className="btn btn-outline-secondary"
+                onClick={handleRegisterClick}
+              >
+                Register
+              </button>
             </>
           )}
         </div>
@@ -39,7 +59,9 @@ const MainContainer: React.FC = () => {
       <h1>Main Page</h1>
       {user ? (
         <>
-          <h2>Welcome, {user.username} ({user.role})</h2>
+          <h2>
+            Welcome, {user.username} ({user.role})
+          </h2>
           {user.role === 'teacher' && <ClassroomCreateForm />}
           <ClassroomListContainer />
         </>

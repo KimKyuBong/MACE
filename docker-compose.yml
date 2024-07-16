@@ -31,8 +31,9 @@ services:  # 실행할 서비스 목록을 정의
     working_dir: /app
     volumes:
       - ./front:/app
+      - /app/node_modules # node_modules는 볼륨 마운트하지 않음
     environment:
-      - REACT_APP_API_SERVER_URL=https://mace.kbnet.kr
+      - REACT_APP_API_SERVER_URL=https://mace.kbnet.kr/api
       - REACT_APP_WEBSOCKET_SERVER_URL=wss://mace.kbnet.kr/ws
     command:
       - sh
@@ -47,7 +48,7 @@ services:  # 실행할 서비스 목록을 정의
     ports:
       - '80:80' # 포트 매핑
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf # Nginx 설정 파일을 로컬 디렉토리와 공유
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf # Nginx 설정 파일을 로컬 디렉토리와 공유
       - ./front/build:/usr/share/nginx/html
     depends_on:
       - back

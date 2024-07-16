@@ -1,9 +1,9 @@
 import React from 'react';
-import {useAuth} from 'hooks/useAuth';
+import { useAuth } from 'contexts/AuthContext';
 import LoginForm from 'components/Login/LoginForm';
 
 const LoginContainer: React.FC = () => {
-  const { error, handleLogin } = useAuth();
+  const { handleLogin, error } = useAuth();
 
   return <LoginForm onLogin={handleLogin} error={error} />;
 };

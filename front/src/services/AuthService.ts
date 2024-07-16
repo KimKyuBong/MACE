@@ -1,23 +1,39 @@
 import fastapi from '../utils/fastapi';
 import { User, RegisterFormData } from 'interfaces/AuthInterfaces';
 
-export const login = async (username: string, password: string): Promise<User> => {
+export const login = async (
+  username: string,
+  password: string
+): Promise<User> => {
   return new Promise((resolve, reject) => {
-    fastapi("post", "/api/user/login", { username, password }, (json: User) => {
-      resolve(json);
-    }, (error: any) => {
-      reject(error);
-    });
+    fastapi(
+      'post',
+      '/user/login',
+      { username, password },
+      undefined, // 로그인 요청 시 토큰 없음
+      (json: User) => {
+        resolve(json);
+      },
+      (error: any) => {
+        reject(error);
+      }
+    );
   });
 };
 
-
 export const register = async (formData: RegisterFormData): Promise<User> => {
   return new Promise((resolve, reject) => {
-    fastapi("post", "/api/user/register", formData, (json: User) => {
-      resolve(json);
-    }, (error: any) => {
-      reject(error);
-    });
+    fastapi(
+      'post',
+      '/user/register',
+      formData,
+      undefined, // 회원가입 요청 시 토큰 없음
+      (json: User) => {
+        resolve(json);
+      },
+      (error: any) => {
+        reject(error);
+      }
+    );
   });
 };

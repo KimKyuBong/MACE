@@ -1,5 +1,5 @@
 from pydantic import Field, field_validator
-import datetime
+from datetime import datetime
 from typing import List
 from bson import ObjectId
 from common import PyObjectId, CustomBaseModel
@@ -17,7 +17,8 @@ class QuestionCreate(CustomBaseModel):
 
 class Question(CustomBaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias='_id')
+    classroom_id: PyObjectId
     subject: str
     content: str
-    create_date: datetime.datetime
+    create_date: datetime = Field(default_factory=datetime.utcnow)
     answers: List[Answer] = []

@@ -6,7 +6,7 @@ interface WebSocketMessage {
   data: any;
 }
 
-const DEFAULT_URL = process.env.REACT_APP_API_SERVER_URL
+const DEFAULT_URL = process.env.REACT_APP_WEBSOCKET_SERVER_URL
 
 
 function useWebSocket(path: string = ''): { socket: WebSocket | null, lastMessage: WebSocketMessage | null, isConnected: boolean } {

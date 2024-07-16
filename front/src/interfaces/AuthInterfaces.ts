@@ -1,11 +1,12 @@
 export interface User {
+  _id: string;
   username: string;
   school: string;
-  studentId?: string;
-  subject?: string;
+  studentId: string;
+  subject: string | null;
   name: string;
-  token: string;
   role: string;
+  token: string;
 }
 
 export interface LoginFormProps {
@@ -26,4 +27,12 @@ export interface RegisterFormData {
   username: string;
   password: string;
   role: string;
+}
+
+export interface AuthContextType {
+  user: User | null;
+  error: string | null;
+  handleLogin: (username: string, password: string) => Promise<void>;
+  handleRegister: (formData: RegisterFormData) => Promise<void>;
+  handleLogout: () => void;
 }

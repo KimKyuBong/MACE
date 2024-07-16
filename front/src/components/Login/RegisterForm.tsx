@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { RegisterFormProps, RegisterFormData } from 'interfaces/AuthInterfaces';
+import { useNavigate } from 'react-router-dom';
 
 const RegisterForm: React.FC<RegisterFormProps> = ({ onRegister, error }) => {
   const [formData, setFormData] = useState<RegisterFormData>({
@@ -11,6 +12,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegister, error }) => {
     password: '',
     role: ''
   });
+  const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
@@ -19,14 +21,19 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegister, error }) => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordRegex.test(formData.password)) {
       alert('Password must be at least 8 characters long and include at least one letter, one number, and one special character.');
       return;
     }
-    onRegister(formData);
+    try {
+      await onRegister(formData);
+      navigate('/');
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (

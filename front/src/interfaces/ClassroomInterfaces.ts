@@ -13,3 +13,8 @@ export interface Classroom {
   created_at?: string; // Optional field for creation date
   updated_at?: string; // Optional field for last update date
 }
+
+export interface ClassroomListProps {
+  classrooms: Classroom[];
+  onJoinClassroom: (classroomId: string) => void;
+}

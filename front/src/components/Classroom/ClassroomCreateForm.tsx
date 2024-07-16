@@ -1,13 +1,18 @@
 import React, { useState } from 'react';
-import { useAuth } from 'hooks/useAuth';
+import { useAuth } from 'contexts/AuthContext';
 import { createClassroom } from 'services/ClassroomService';
 
 const ClassroomCreateForm: React.FC = () => {
   const { user } = useAuth();
-  const [classroomData, setClassroomData] = useState({ name: '', description: '' });
+  const [classroomData, setClassroomData] = useState({
+    name: '',
+    description: '',
+  });
   const [error, setError] = useState<string | null>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     setClassroomData({
       ...classroomData,
       [e.target.name]: e.target.value,
@@ -41,15 +46,36 @@ const ClassroomCreateForm: React.FC = () => {
       <h2>Create Classroom</h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
-          <label htmlFor="name" className="form-label">Classroom Name</label>
-          <input type="text" className="form-control" id="name" name="name" value={classroomData.name} onChange={handleChange} required />
+          <label htmlFor="name" className="form-label">
+            Classroom Name
+          </label>
+          <input
+            type="text"
+            className="form-control"
+            id="name"
+            name="name"
+            value={classroomData.name}
+            onChange={handleChange}
+            required
+          />
         </div>
         <div className="mb-3">
-          <label htmlFor="description" className="form-label">Description</label>
-          <textarea className="form-control" id="description" name="description" value={classroomData.description} onChange={handleChange} required />
+          <label htmlFor="description" className="form-label">
+            Description
+          </label>
+          <textarea
+            className="form-control"
+            id="description"
+            name="description"
+            value={classroomData.description}
+            onChange={handleChange}
+            required
+          />
         </div>
         {error && <div className="alert alert-danger">{error}</div>}
-        <button type="submit" className="btn btn-primary">Create Classroom</button>
+        <button type="submit" className="btn btn-primary">
+          Create Classroom
+        </button>
       </form>
     </div>
   );

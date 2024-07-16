@@ -1,36 +1,38 @@
-from datetime import datetime
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from bson import ObjectId
-from .question_model import QuestionCreate, Question, Answer
-import json
+from .question_model import QuestionCreate, Question
+from datetime import datetime
+from common import PyObjectId
 
-async def create_question(db: AsyncIOMotorDatabase, question_data: QuestionCreate):
+async def create_question(db: AsyncIOMotorDatabase, classroom_id: PyObjectId, question_data: QuestionCreate) -> Question:
     new_question = question_data.dict()
+    new_question["classroom_id"] = classroom_id
     new_question["create_date"] = datetime.utcnow()
     result = await db["questions"].insert_one(new_question)
     new_question["_id"] = result.inserted_id
-    return new_question
+    return Question(**new_question)
 
-async def update_question(db: AsyncIOMotorDatabase, question_id: str, question_data: QuestionCreate):
-    question_id_obj = ObjectId(question_id)
-    updated_question = {
-        "subject": question_data.subject,
-        "content": question_data.content
-    }
-    await db["questions"].update_one({"_id": question_id_obj}, {"$set": updated_question})
-    updated_question["_id"] = question_id_obj
-    return updated_question
+async def update_question(db: AsyncIOMotorDatabase, question_id: PyObjectId, question_data: QuestionCreate) -> Question:
+    update_data = question_data.dict()
+    update_data["updated_at"] = datetime.utcnow()
+    result = await db["questions"].update_one(
+        {"_id": question_id},
+        {"$set": update_data}
+    )
+    if result.matched_count == 0:
+        raise Exception("Question not found")
+    updated_question = await db["questions"].find_one({"_id": question_id})
+    return Question(**updated_question)
 
-async def delete_question(db: AsyncIOMotorDatabase, question_id: str):
-    question_id_obj = ObjectId(question_id)
-    await db["questions"].delete_one({"_id": question_id_obj})
-    return question_id_obj
-
-async def get_question_detail(db: AsyncIOMotorDatabase, question_id: str):
-    question_id_obj = ObjectId(question_id)
-    question = await db["questions"].find_one({"_id": question_id_obj})
+async def delete_question(db: AsyncIOMotorDatabase, question_id: PyObjectId) -> Question:
+    question = await db["questions"].find_one({"_id": question_id})
     if not question:
-        return None
-    answers = await db["answers"].find({"question_id": question_id_obj}).to_list(None)
-    question["answers"] = answers
-    return question
+        raise Exception("Question not found")
+    await db["questions"].delete_one({"_id": question_id})
+    return Question(**question)
+
+async def get_question_detail(db: AsyncIOMotorDatabase, question_id: PyObjectId) -> Question:
+    question = await db["questions"].find_one({"_id": question_id})
+    if not question:
+        raise Exception("Question not found")
+    return Question(**question)
