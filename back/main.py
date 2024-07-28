@@ -35,11 +35,12 @@ from domain.answer import answer_router
 from domain.question import question_router
 from domain.user import user_router
 from domain.classroom import classroom_router
+from domain.activity import activity_router
 app.include_router(question_router.router)
 app.include_router(answer_router.router)
 app.include_router(user_router.router)
 app.include_router(classroom_router.router)
-
+app.include_router(activity_router.router)
 # 웹소켓 엔드포인트
 @app.websocket("/ws/{room_id}", "/ws")
 async def websocket_endpoint(websocket: WebSocket, room_id: str):

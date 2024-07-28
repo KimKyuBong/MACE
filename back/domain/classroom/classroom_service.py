@@ -3,6 +3,7 @@ from .classroom_model import ClassroomCreate, Classroom
 from bson import ObjectId
 from typing import List, Union
 from fastapi import HTTPException, status
+
 async def create_classroom(db: AsyncIOMotorDatabase, classroom_data: ClassroomCreate, teacher_id: ObjectId) -> Classroom:
     try:
         new_classroom = classroom_data.dict(by_alias=True)
@@ -16,7 +17,7 @@ async def create_classroom(db: AsyncIOMotorDatabase, classroom_data: ClassroomCr
 async def get_classrooms(db: AsyncIOMotorDatabase) -> Union[List[Classroom], str]:
     classrooms = await db["classrooms"].find().to_list(1000)
     if not classrooms:
-        return "클래스가 없습니다"
+        return "No classrooms found"
     return [Classroom(**c) for c in classrooms]
 
 async def request_join_classroom(db: AsyncIOMotorDatabase, classroom_id: str, student_id: str):

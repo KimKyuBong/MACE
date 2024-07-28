@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import fastapi from '../utils/fastapi';
+import fastapi from '../features/Common/utils/fastapi';
 import { useNavigate } from 'react-router-dom';
 
 const Login: React.FC = () => {

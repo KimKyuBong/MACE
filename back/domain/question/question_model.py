@@ -1,15 +1,15 @@
-from pydantic import Field, field_validator
+from pydantic import Field, validator
 from datetime import datetime
 from typing import List
-from bson import ObjectId
 from common import PyObjectId, CustomBaseModel
+from bson import ObjectId
 from domain.answer.answer_model import Answer
 
 class QuestionCreate(CustomBaseModel):
     subject: str
     content: str
 
-    @field_validator('subject', 'content')
+    @validator('subject', 'content')
     def not_empty(cls, v):
         if not v.strip():
             raise ValueError('Field cannot be empty')
@@ -20,5 +20,10 @@ class Question(CustomBaseModel):
     classroom_id: PyObjectId
     subject: str
     content: str
-    create_date: datetime = Field(default_factory=datetime.utcnow)
+    create_date: datetime = Field(default_factory=datetime.utcnow, description="Creation date of the question.")
     answers: List[Answer] = []
+
+    class Config:
+        json_encoders = {
+            ObjectId: str
+        }
