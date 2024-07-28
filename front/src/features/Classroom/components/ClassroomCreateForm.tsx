@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useAuth } from 'features/Common/contexts/AuthContext';
+import { useAuth } from 'features/Auth/contexts/AuthContext';
 import { createClassroom } from 'features/Classroom/ClassroomService';
 
 const ClassroomCreateForm: React.FC = () => {

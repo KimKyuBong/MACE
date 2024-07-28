@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useAuth } from 'features/Common/contexts/AuthContext';
+import { useAuth } from 'features/Auth/contexts/AuthContext';
 import ClassroomCreateForm from 'features/Classroom/components/ClassroomCreateForm';
 import ClassroomListContainer from 'features/Classroom/containers/ClassroomListContainer';
 import useWebSocket from 'features/Common/hooks/useWebSocket';
@@ -58,7 +58,7 @@ const MainContainer: React.FC = () => {
     }
   };
   const handleViewClassroom = (classroomId: string) => {
-    navigate(`/classroom/${classroomId}/activities`);
+    navigate(`/classrooms/${classroomId}`);
   };
 
   if (loading) {

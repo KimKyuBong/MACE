@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ErrorDetail } from 'features/Common/CommonInterfaces';
 import { postQuestion } from '../QuestionService';
 import QuestionForm from '../components/QuestionForm';
-import { useAuth } from 'features/Common/contexts/AuthContext';
+import { useAuth } from 'features/Auth/contexts/AuthContext';
 
 const QuestionCreateContainer: React.FC = () => {
   const { user } = useAuth();

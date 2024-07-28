@@ -5,7 +5,7 @@ import { ErrorDetail } from 'features/Common/CommonInterfaces';
 import { getQuestionDetail, postAnswer } from '../QuestionService';
 import useWebSocket from 'features/Common/hooks/useWebSocket';
 import QuestionDetail from 'features/Question/components/QuestionDetail';
-import { useAuth } from 'features/Common/contexts/AuthContext';
+import { useAuth } from 'features/Auth/contexts/AuthContext';
 
 function QuestionDetailContainer() {
   const { id } = useParams<{ id: string }>();

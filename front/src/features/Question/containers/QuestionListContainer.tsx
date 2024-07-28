@@ -4,7 +4,7 @@ import { Question } from '../QuestionInterfaces';
 import QuestionList from 'features/Question/components/QuestionList';
 import { fetchQuestions } from '../QuestionService';
 import useWebSocket from 'features/Common/hooks/useWebSocket';
-import { useAuth } from 'features/Common/contexts/AuthContext';
+import { useAuth } from 'features/Auth/contexts/AuthContext';
 
 const QuestionListContainer: React.FC = () => {
   const [questions, setQuestions] = useState<Question[]>([]);

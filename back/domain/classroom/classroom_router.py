@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from motor.motor_asyncio import AsyncIOMotorDatabase
-from .classroom_service import create_classroom, get_classrooms, request_join_classroom, approve_join_classroom
-from .classroom_model import ClassroomCreate, Classroom
+from .classroom_service import create_classroom, get_classrooms, get_classroom_details, request_join_classroom, approve_join_classroom
+from .classroom_model import ClassroomCreate, Classroom, ClassroomDetail
 from common import PyObjectId
 from domain.user.user_model import User
 from database.db import get_db
@@ -20,6 +20,13 @@ async def get_classrooms_endpoint(db: AsyncIOMotorDatabase = Depends(get_db)):
     if isinstance(classrooms, str):
         return {"message": classrooms}
     return classrooms
+
+@router.get("/{classroom_id}", response_model=ClassroomDetail)
+async def get_classroom_detail_endpoint(classroom_id: str, db: AsyncIOMotorDatabase = Depends(get_db)):
+    classroom = await get_classroom_details(db, classroom_id)
+    if classroom is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Classroom not found")
+    return classroom
 
 @router.post("/join/{classroom_id}", response_model=dict)
 async def request_join_classroom_endpoint(classroom_id: str, db: AsyncIOMotorDatabase = Depends(get_db), user: User = Depends(get_current_user)):

@@ -5,23 +5,24 @@ export interface ClassroomCreate {
   description: string;
 }
 
+
 export interface Activity {
-  _id: string;
+  _id: string; // MongoDB ObjectId를 문자열로 처리
   title: string;
   description: string;
   created_at: string;
 }
 
 export interface Classroom {
-  _id: string;
+  _id: string; // MongoDB ObjectId를 문자열로 처리
   name: string;
   description: string;
   teacher_id: string;
   students: string[];
   pending_students: string[];
   activities: Activity[];
-  created_at?: string;
-  updated_at?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface ClassroomListProps {
@@ -30,3 +31,4 @@ export interface ClassroomListProps {
   onJoinClassroom: (classroomId: string) => void;
   onViewClassroom: (classroomId: string) => void;
 }
+

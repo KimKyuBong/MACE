@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Optional
 from bson import ObjectId
 from datetime import datetime
 from common import PyObjectId, CustomBaseModel
@@ -33,3 +33,8 @@ class Classroom(CustomBaseModel):
         json_encoders = {
             ObjectId: str
         }
+
+class ClassroomDetail(Classroom):
+    # 교실의 세부 정보를 나타내는 모델
+    activities: List[str] = Field(default_factory=list, description="활동들의 이름 리스트")
+    teacher_name: Optional[str] = Field(None, description="교실을 생성한 교사의 이름")

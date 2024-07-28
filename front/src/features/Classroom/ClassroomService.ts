@@ -1,4 +1,4 @@
-import { ClassroomCreate, Classroom } from 'features/Classroom/ClassroomInterfaces';
+import { ClassroomCreate, Classroom, Activity } from 'features/Classroom/ClassroomInterfaces';
 import fastapi from 'features/Common/utils/fastapi';
 
 export const createClassroom = async (
@@ -8,9 +8,9 @@ export const createClassroom = async (
   return new Promise((resolve, reject) => {
     fastapi(
       'post',
-      '/classroom/create',
+      '/classrooms/create',
       classroomData,
-      token, // 토큰 포함
+      token,
       (data: Classroom) => resolve(data),
       (error: any) => reject(error)
     );
@@ -21,10 +21,23 @@ export const getClassrooms = async (token: string): Promise<Classroom[]> => {
   return new Promise((resolve, reject) => {
     fastapi(
       'get',
-      '/classroom/',
+      '/classrooms/',
       {},
-      token, // 토큰 포함
+      token,
       (data: Classroom[]) => resolve(data),
+      (error: any) => reject(error)
+    );
+  });
+};
+
+export const getClassroom = async (classroomId: string, token: string): Promise<Classroom> => {
+  return new Promise((resolve, reject) => {
+    fastapi(
+      'get',
+      `/classrooms/${classroomId}`,
+      {},
+      token,
+      (data: Classroom) => resolve(data),
       (error: any) => reject(error)
     );
   });
@@ -37,10 +50,10 @@ export const joinClassroom = async (
   return new Promise((resolve, reject) => {
     fastapi(
       'post',
-      `/classroom/join/${classroomId}`,
+      `/classrooms/join/${classroomId}`,
       {},
-      token, // 토큰 포함
-      (data: any) => resolve(data),
+      token,
+      () => resolve(),
       (error: any) => reject(error)
     );
   });
@@ -54,10 +67,23 @@ export const approveJoinClassroom = async (
   return new Promise((resolve, reject) => {
     fastapi(
       'post',
-      `/classroom/approve/${classroomId}/${studentId}`,
+      `/classrooms/approve_join/${classroomId}`,
+      { studentId },
+      token,
+      () => resolve(),
+      (error: any) => reject(error)
+    );
+  });
+};
+
+export const getActivities = async (classroomId: string, token: string): Promise<Activity[]> => {
+  return new Promise((resolve, reject) => {
+    fastapi(
+      'get',
+      `/classrooms/${classroomId}/activities`,
       {},
-      token, // 토큰 포함
-      (data: any) => resolve(data),
+      token,
+      (data: Activity[]) => resolve(data),
       (error: any) => reject(error)
     );
   });

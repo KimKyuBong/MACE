@@ -3,7 +3,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import AppRoutes from 'features/Common/routes/AppRoutes';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.min.js';
-import { AuthProvider } from 'features/Common/contexts/AuthContext';
+import { AuthProvider } from 'features/Auth/contexts/AuthContext';
 
 // App 컴포넌트 정의
 function App(): JSX.Element {

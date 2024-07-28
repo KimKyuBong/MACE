@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAuth } from 'features/Common/contexts/AuthContext';
+import { useAuth } from 'features/Auth/contexts/AuthContext';
 import LoginForm from 'features/Auth/components/LoginForm';
 
 const LoginContainer: React.FC = () => {
