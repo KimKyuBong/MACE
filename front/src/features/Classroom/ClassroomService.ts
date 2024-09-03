@@ -1,4 +1,9 @@
-import { ClassroomCreate, Classroom, Activity } from 'features/Classroom/ClassroomInterfaces';
+import {
+  ClassroomCreate,
+  ClassroomDetail,
+  Classroom,
+  Activity,
+} from 'features/Classroom/ClassroomInterfaces';
 import fastapi from 'features/Common/utils/fastapi';
 
 export const createClassroom = async (
@@ -17,27 +22,17 @@ export const createClassroom = async (
   });
 };
 
-export const getClassrooms = async (token: string): Promise<Classroom[]> => {
+export const getClassroom = async (
+  id: string,
+  token: string
+): Promise<ClassroomDetail> => {
   return new Promise((resolve, reject) => {
     fastapi(
       'get',
-      '/classrooms/',
+      `/classrooms/${id}`,
       {},
       token,
-      (data: Classroom[]) => resolve(data),
-      (error: any) => reject(error)
-    );
-  });
-};
-
-export const getClassroom = async (classroomId: string, token: string): Promise<Classroom> => {
-  return new Promise((resolve, reject) => {
-    fastapi(
-      'get',
-      `/classrooms/${classroomId}`,
-      {},
-      token,
-      (data: Classroom) => resolve(data),
+      (data: ClassroomDetail) => resolve(data),
       (error: any) => reject(error)
     );
   });
@@ -76,7 +71,10 @@ export const approveJoinClassroom = async (
   });
 };
 
-export const getActivities = async (classroomId: string, token: string): Promise<Activity[]> => {
+export const getActivities = async (
+  classroomId: string,
+  token: string
+): Promise<Activity[]> => {
   return new Promise((resolve, reject) => {
     fastapi(
       'get',

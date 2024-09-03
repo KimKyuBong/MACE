@@ -1,31 +1,48 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response
-from motor.motor_asyncio import AsyncIOMotorDatabase
-from .user_service import register_user_service, login_user_service
-from .user_model import UserCreate, UserLogin, User
-from database.db import get_db
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+from .user_service import UserService
+from .user_model import User, UserResponse,TokenResponse, UserLogin
+from typing import List
+from beanie import PydanticObjectId
 
 router = APIRouter(prefix="/api/user")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-@router.post("/register", response_model=User)
-async def register_user(user_data: UserCreate, db: AsyncIOMotorDatabase = Depends(get_db)):
-    try:
-        result = await register_user_service(db, user_data)
-        return result
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+@router.post("/register", response_model=TokenResponse)
+async def register_user(user_data: User):
+    user = await UserService.register_user(user_data.dict(exclude={"id"}))
+    token_response = await UserService.authenticate_user(user.username, user_data.password)
+    if not token_response:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to authenticate after registration")
+    return token_response
 
-@router.post("/login", response_model=User)
-async def login_user(user_data: UserLogin, response: Response, db: AsyncIOMotorDatabase = Depends(get_db)):
-    try:
-        result = await login_user_service(db, user_data.username, user_data.password)
-        # Set cookie
-        response.set_cookie(
-            key="user_token",
-            value=result.token,  # assuming the token is part of the User model
-            httponly=True,
-            secure=True,  # Set to True in production
-            samesite="Strict"
-        )
-        return result
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
+@router.post("/login", response_model=TokenResponse)
+async def login_user(user_data: UserLogin):
+    token_response = await UserService.authenticate_user(user_data.username, user_data.password)
+    if not token_response:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid username or password")
+    return token_response
+
+@router.get("/me", response_model=UserResponse)
+async def get_current_user_info(token: str = Depends(oauth2_scheme)):
+    user = await UserService.get_current_user(token)
+    return UserResponse(**user.dict())
+
+@router.get("/", response_model=List[User])
+async def get_all_users():
+    return await UserService.get_all_users()
+
+@router.get("/{user_id}", response_model=User)
+async def get_user_by_id(user_id: PydanticObjectId):
+    return await UserService.get_user_by_id(user_id)
+
+@router.put("/{user_id}", response_model=User)
+async def update_user(user_id: PydanticObjectId, user_data: User):
+    return await UserService.update_user(user_id, user_data.dict(exclude={"id", "password"}))
+
+@router.delete("/{user_id}", response_model=dict)
+async def delete_user(user_id: PydanticObjectId):
+    result = await UserService.delete_user(user_id)
+    if not result:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found or already deleted")
+    return {"message": "User deleted successfully"}

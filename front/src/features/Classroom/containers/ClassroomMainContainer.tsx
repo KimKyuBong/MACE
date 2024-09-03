@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Classroom } from 'features/Classroom/ClassroomInterfaces';
+import { ClassroomDetail } from 'features/Classroom/ClassroomInterfaces';
 import ActivityList from '../components/ActivityList';
 import StudentList from '../components/StudentList';
 import PendingStudentList from '../components/PendingStudentList';
@@ -11,7 +11,7 @@ const ClassroomMainContainer: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [classroom, setClassroom] = useState<Classroom | null>(null);
+  const [classroom, setClassroom] = useState<ClassroomDetail | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 

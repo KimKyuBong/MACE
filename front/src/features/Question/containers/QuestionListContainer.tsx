@@ -41,7 +41,7 @@ const QuestionListContainer: React.FC = () => {
           addNewQuestion(message);
           break;
         case 'delete_question':
-          deleteQuestion(message._id);
+          deleteQuestion(message.id);
           break;
         case 'update_question':
           updateQuestion(message);
@@ -58,14 +58,14 @@ const QuestionListContainer: React.FC = () => {
 
   const deleteQuestion = (id: string) => {
     setQuestions((prevQuestions) =>
-      prevQuestions.filter((question) => question._id !== id)
+      prevQuestions.filter((question) => question.id !== id)
     );
   };
 
   const updateQuestion = (updatedQuestion: Question) => {
     setQuestions((prevQuestions) =>
       prevQuestions.map((question) =>
-        question._id === updatedQuestion._id ? updatedQuestion : question
+        question.id === updatedQuestion.id ? updatedQuestion : question
       )
     );
   };

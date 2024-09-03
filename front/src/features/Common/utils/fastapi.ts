@@ -1,17 +1,14 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 
-// 매개변수와 콜백 함수들에 대한 타입을 정의합니다.
-type Operation = 'get' | 'post' | 'put' | 'delete';
-interface Params {
-  [key: string]: any;
-}
+// 로컬 스토리지에서 토큰을 가져오는 헬퍼 함수
+const getStoredToken = (): string | null => {
+  return localStorage.getItem('access_token');
+};
 
-interface RequestOptions {
-  headers?: { [key: string]: string };
-}
+// 현재 접속한 주소를 바탕으로 baseUrl을 구성합니다.
+const baseUrl = `${window.location.origin}/api`;
 
 // Axios 인스턴스를 생성합니다.
-const baseUrl = process.env.REACT_APP_API_SERVER_URL || '';
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: baseUrl,
   headers: {
@@ -20,21 +17,25 @@ const axiosInstance: AxiosInstance = axios.create({
 });
 
 const fastapi = (
-  operation: Operation,
+  operation: 'get' | 'post' | 'put' | 'delete',
   url: string,
-  params: Params,
+  params: { [key: string]: any },
   token?: string,
   success_callback?: (data?: any) => void,
   failure_callback?: (error: any) => void,
-  options?: RequestOptions
+  options?: { headers?: { [key: string]: string } }
 ): void => {
   const method = operation;
+
+  // 로컬 스토리지에서 토큰을 가져옵니다.
+  const authToken = token || getStoredToken(); // 로컬 스토리지에서 토큰을 가져옵니다.
+
   const axiosOptions: AxiosRequestConfig = {
     method: method,
     url: url, // axiosInstance가 baseURL을 이미 설정했으므로 상대 URL 사용
     headers: {
       ...options?.headers, // 추가 헤더를 병합
-      ...(token && { Authorization: `Bearer ${token}` }), // 토큰이 있으면 Authorization 헤더에 추가
+      ...(authToken && { Authorization: `Bearer ${authToken}` }), // 토큰이 있으면 Authorization 헤더에 추가
     },
   };
 

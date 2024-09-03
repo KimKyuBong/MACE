@@ -1,14 +1,14 @@
-import * as C from '../Common/CommonInterfaces'
-  
+import * as C from '../Common/CommonInterfaces';
+
 export interface Answer {
-  _id: string;
+  id: string;
   content: string;
   create_date: string;
   question_id: string;
 }
 
 export interface Question {
-  _id: string; // MongoDB의 _id를 그대로 사용
+  id: string; // MongoDB의 _id를 그대로 사용
   classroom_id: string;
   subject: string;
   content: string;
@@ -16,18 +16,15 @@ export interface Question {
   answers: Answer[];
 }
 
-
 export interface QuestionItemProps {
   question: Question;
   index: number;
 }
 
-  
 export interface QuestionListProps {
   questions: Question[];
 }
 
-  
 export interface QuestionDetailProps {
   question: Question | undefined;
   error: C.ErrorDetail;
@@ -36,20 +33,14 @@ export interface QuestionDetailProps {
   handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
 }
 
-
 export interface PostQuestionParams {
   subject: string;
   content: string;
 }
 
-  
 export interface AnswerItemProps {
   answer: {
-    _id: string;
+    id: string;
     content: string;
   };
 }
-
-
-
-

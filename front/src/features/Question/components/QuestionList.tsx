@@ -2,7 +2,6 @@ import React from 'react';
 import { QuestionListProps } from '../QuestionInterfaces';
 import QuestionItem from './QuestionItem';
 
-
 const QuestionList: React.FC<QuestionListProps> = ({ questions }) => (
   <table className="table">
     <thead>
@@ -14,7 +13,7 @@ const QuestionList: React.FC<QuestionListProps> = ({ questions }) => (
     </thead>
     <tbody>
       {questions.map((question, index) => (
-        <QuestionItem key={question._id} question={question} index={index} />
+        <QuestionItem key={question.id} question={question} index={index} />
       ))}
     </tbody>
   </table>

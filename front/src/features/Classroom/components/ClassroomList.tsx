@@ -18,19 +18,23 @@ const ClassroomList: React.FC<ClassroomListProps> = ({
     return <div>{classrooms.message}</div>;
   }
 
+  if (classrooms.length === 0) {
+    return <div>No classrooms available.</div>;
+  }
+
   return (
     <div>
       <h2>Classrooms</h2>
       <ul>
         {classrooms.map((classroom) => (
-          <li key={classroom._id.toString()}>
+          <li key={classroom.id}>
             {classroom.name}: {classroom.description}
             {user?.role === 'student' ? (
-              <button onClick={() => onJoinClassroom(classroom._id.toString())}>
+              <button onClick={() => onJoinClassroom(classroom.id)}>
                 Join
               </button>
-            ) : user?.role === 'teacher' && classroom.teacher_id === user._id ? (
-              <button onClick={() => onViewClassroom(classroom._id.toString())}>
+            ) : user?.role === 'teacher' && classroom.teacher_id === user.id ? (
+              <button onClick={() => onViewClassroom(classroom.id)}>
                 View
               </button>
             ) : null}

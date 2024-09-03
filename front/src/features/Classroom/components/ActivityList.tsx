@@ -11,8 +11,8 @@ const ActivityList: React.FC<ActivityListProps> = ({ activities }) => {
       <h3>Activities</h3>
       <ul>
         {activities.map((activity) => (
-          <li key={activity._id}>
-            <h4>{activity.title}</h4>
+          <li key={activity.id}>
+            <h4>{activity.name}</h4>
             <p>{activity.description}</p>
             <p>{activity.created_at}</p>
           </li>

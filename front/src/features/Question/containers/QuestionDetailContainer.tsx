@@ -21,8 +21,8 @@ function QuestionDetailContainer() {
       console.log('Connecting to WebSocket');
       fetchQuestionDetail(id);
     } else {
-      console.error("Invalid question ID");
-      navigate("/"); // 유효하지 않은 ID인 경우 홈으로 이동
+      console.error('Invalid question ID');
+      navigate('/'); // 유효하지 않은 ID인 경우 홈으로 이동
     }
   }, [id]);
 
@@ -36,7 +36,7 @@ function QuestionDetailContainer() {
           addNewAnswer(messageData);
           break;
         case 'delete_answer':
-          deleteAnswer(messageData._id);
+          deleteAnswer(messageData.id);
           break;
         case 'update_answer':
           updateAnswer(messageData);
@@ -73,7 +73,7 @@ function QuestionDetailContainer() {
           addNewAnswer(newAnswer);
           setAnswer('');
         } else {
-          console.error("Invalid question ID");
+          console.error('Invalid question ID');
         }
       } catch (error) {
         setError({ detail: { msg: 'An unexpected error occurred' } });
@@ -83,15 +83,15 @@ function QuestionDetailContainer() {
   };
 
   const addNewAnswer = (newAnswer: Answer) => {
-    setQuestion(prevQuestion => {
+    setQuestion((prevQuestion) => {
       if (prevQuestion) {
         // 중복 답변 추가 방지
-        if (prevQuestion.answers.some(answer => answer._id === newAnswer._id)) {
+        if (prevQuestion.answers.some((answer) => answer.id === newAnswer.id)) {
           return prevQuestion;
         }
         const updatedQuestion = {
           ...prevQuestion,
-          answers: [...prevQuestion.answers, newAnswer]
+          answers: [...prevQuestion.answers, newAnswer],
         };
         console.log('Updated Question:', updatedQuestion);
         return updatedQuestion;
@@ -101,11 +101,11 @@ function QuestionDetailContainer() {
   };
 
   const deleteAnswer = (id: string) => {
-    setQuestion(prevQuestion => {
+    setQuestion((prevQuestion) => {
       if (prevQuestion) {
         const updatedQuestion = {
           ...prevQuestion,
-          answers: prevQuestion.answers.filter(answer => answer._id !== id)
+          answers: prevQuestion.answers.filter((answer) => answer.id !== id),
         };
         console.log('deleteAnswer:', updatedQuestion);
         return updatedQuestion;
@@ -115,11 +115,13 @@ function QuestionDetailContainer() {
   };
 
   const updateAnswer = (updatedAnswer: Answer) => {
-    setQuestion(prevQuestion => {
+    setQuestion((prevQuestion) => {
       if (prevQuestion) {
         const updatedQuestion = {
           ...prevQuestion,
-          answers: prevQuestion.answers.map(answer => answer._id === updatedAnswer._id ? updatedAnswer : answer)
+          answers: prevQuestion.answers.map((answer) =>
+            answer.id === updatedAnswer.id ? updatedAnswer : answer
+          ),
         };
         console.log('Updated Answer:', updatedQuestion);
         return updatedQuestion;

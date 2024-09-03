@@ -30,7 +30,11 @@ const MainContainer: React.FC = () => {
           const data = await getClassrooms(user.token);
           setClassrooms(data);
         } catch (err) {
-          setError('Failed to fetch classrooms');
+          if (err instanceof Error) {
+            setError(err.message); // 에러 메시지를 설정
+          } else {
+            setError('An unknown error occurred');
+          }
         } finally {
           setLoading(false);
         }
@@ -65,10 +69,6 @@ const MainContainer: React.FC = () => {
     return <div>Loading...</div>;
   }
 
-  if (error) {
-    return <div>{error}</div>;
-  }
-
   return (
     <div className="container">
       <nav className="navbar navbar-light bg-light">
@@ -79,16 +79,25 @@ const MainContainer: React.FC = () => {
               <span className="navbar-text">
                 {user.username} ({user.role})
               </span>
-              <button className="btn btn-outline-danger ml-2" onClick={handleLogout}>
+              <button
+                className="btn btn-outline-danger ml-2"
+                onClick={handleLogout}
+              >
                 Logout
               </button>
             </>
           ) : (
             <>
-              <button className="btn btn-outline-primary mr-2" onClick={handleLoginClick}>
+              <button
+                className="btn btn-outline-primary mr-2"
+                onClick={handleLoginClick}
+              >
                 Login
               </button>
-              <button className="btn btn-outline-secondary" onClick={handleRegisterClick}>
+              <button
+                className="btn btn-outline-secondary"
+                onClick={handleRegisterClick}
+              >
                 Register
               </button>
             </>
@@ -104,28 +113,45 @@ const MainContainer: React.FC = () => {
           </h2>
           {user.role === 'teacher' && (
             <>
-              <button className="btn btn-primary mb-3" onClick={handleCreateClassroomClick}>
+              <button
+                className="btn btn-primary mb-3"
+                onClick={handleCreateClassroomClick}
+              >
                 {showCreateForm ? 'Cancel' : 'Create Classroom'}
               </button>
               {showCreateForm && <ClassroomCreateForm />}
             </>
           )}
-          <ClassroomListContainer
-            classrooms={classrooms}
-            user={user}
-            onJoinClassroom={handleJoinClassroom}
-            onViewClassroom={handleViewClassroom}
-          />
+          {error ? (
+            <div>{error}</div>
+          ) : (
+            <>
+              <ClassroomListContainer
+                classrooms={classrooms}
+                user={user}
+                onJoinClassroom={handleJoinClassroom}
+                onViewClassroom={handleViewClassroom}
+              />
+              {classrooms.length === 0 && <p>No classrooms available.</p>}
+            </>
+          )}
         </>
       ) : (
         <>
           <h2>Please log in or register to join a classroom</h2>
-          <ClassroomListContainer
-            classrooms={classrooms}
-            user={user}
-            onJoinClassroom={handleJoinClassroom}
-            onViewClassroom={handleViewClassroom}
-          />
+          {error ? (
+            <div>{error}</div>
+          ) : (
+            <>
+              <ClassroomListContainer
+                classrooms={classrooms}
+                user={user}
+                onJoinClassroom={handleJoinClassroom}
+                onViewClassroom={handleViewClassroom}
+              />
+              {classrooms.length === 0 && <p>No classrooms available.</p>}
+            </>
+          )}
         </>
       )}
       {notifications.length > 0 && (

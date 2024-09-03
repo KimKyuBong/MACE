@@ -1,7 +1,8 @@
 import React from 'react';
+import { StudentDetail } from 'features/Classroom/ClassroomInterfaces';
 
 interface StudentListProps {
-  students: string[];
+  students: StudentDetail[];
 }
 
 const StudentList: React.FC<StudentListProps> = ({ students }) => {
@@ -10,7 +11,9 @@ const StudentList: React.FC<StudentListProps> = ({ students }) => {
       <h3>Students</h3>
       <ul>
         {students.map((student) => (
-          <li key={student}>{student}</li>
+          <li key={student.id}>
+            {student.name} ({student.studentId})
+          </li>
         ))}
       </ul>
     </div>

@@ -6,12 +6,12 @@ import React, {
   useEffect,
 } from 'react';
 import { User, RegisterFormData } from 'features/Auth/AuthInterfaces';
-import { login, register } from 'features/Auth/AuthService';
-import { useCookies } from 'react-cookie';
+import { login, register, getUserInfo } from 'features/Auth/AuthService';
 
 interface AuthContextType {
   user: User | null;
   error: string | null;
+  loading: boolean;
   handleLogin: (username: string, password: string) => Promise<void>;
   handleRegister: (formData: RegisterFormData) => Promise<void>;
   handleLogout: () => void;
@@ -24,53 +24,59 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [cookies, setCookie, removeCookie] = useCookies(['user']);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = cookies.user;
-    if (storedUser) {
-      setUser(storedUser);
-    }
-  }, [cookies]);
+    const initAuth = async () => {
+      const userInfo = await getUserInfo();
+      if (userInfo) {
+        setUser(userInfo);
+      } else {
+        handleLogout();
+      }
+      setLoading(false);
+    };
+
+    initAuth();
+  }, []);
 
   const handleLogin = async (username: string, password: string) => {
     try {
-      const loggedInUser = await login(username, password);
-      setUser(loggedInUser);
-      setCookie('user', loggedInUser, {
-        path: '/',
-        secure: true, // 배포 환경에서는 secure 설정
-        sameSite: 'strict', // 쿠키의 SameSite 설정
-      });
+      const userInfo = await login(username, password);
+      setUser(userInfo);
       setError(null);
     } catch (err) {
       setError('Login failed. Please check your credentials.');
+      console.error('Login error:', err);
     }
   };
 
   const handleRegister = async (formData: RegisterFormData) => {
     try {
-      const registeredUser = await register(formData);
-      setUser(registeredUser);
-      setCookie('user', registeredUser, {
-        path: '/',
-        secure: true, // 배포 환경에서는 secure 설정
-        sameSite: 'strict', // 쿠키의 SameSite 설정
-      });
+      const userInfo = await register(formData);
+      setUser(userInfo);
       setError(null);
     } catch (err) {
       setError('Registration failed. Please try again.');
+      console.error('Registration error:', err);
     }
   };
 
   const handleLogout = () => {
     setUser(null);
-    removeCookie('user', { path: '/' });
+    localStorage.removeItem('access_token');
   };
 
   return (
     <AuthContext.Provider
-      value={{ user, error, handleLogin, handleRegister, handleLogout }}
+      value={{
+        user,
+        error,
+        loading,
+        handleLogin,
+        handleRegister,
+        handleLogout,
+      }}
     >
       {children}
     </AuthContext.Provider>

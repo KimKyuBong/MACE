@@ -1,22 +1,50 @@
-from fastapi import FastAPI,WebSocket, WebSocketDisconnect
+from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
-from typing import List
-from websocket import manager 
-from database.db import get_db, Database
 from contextlib import asynccontextmanager
+from beanie import init_beanie
+from motor.motor_asyncio import AsyncIOMotorClient
+from utils.router_loader import load_routers
+from config.settings import settings
+
+# 모든 Beanie 모델을 여기서 임포트합니다
+from domain.user.user_model import User  # 예시 모델
+from domain.classroom.classroom_model import Classroom
+from domain.activity.activity_model import Activity  
+from domain.question.question_model import Question  
+from domain.answer.answer_model import Answer  
+# 다른 모델들도 여기에 추가...
 import logging
 
-app = FastAPI()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await Database.connect()
+    logging.info("Starting database connection and Beanie initialization")
+    try:
+        # MongoDB 클라이언트 생성
+        client = AsyncIOMotorClient(settings.db_url)
+        
+        # Beanie 초기화
+        await init_beanie(
+            database=client[settings.db_name],
+            document_models=[User, Classroom, Activity, Question, Answer]
+        )
+        logging.info("Beanie initialization completed successfully")
+        
+        # 간단한 쿼리로 초기화 확인
+        user_count = await User.count()
+        logging.info(f"User collection initialized. Current user count: {user_count}")
+        
+    except Exception as e:
+        logging.error(f"Error during database connection or Beanie initialization: {str(e)}")
+        raise e
+    
     yield
-    await Database.disconnect()
+    
+    # 연결 종료
+    client.close()
+    logging.info("Database connection closed")
 
 app = FastAPI(lifespan=lifespan)
-
-
 
 # CORS 설정
 origins = ["https://mace.kbnet.kr"]
@@ -28,32 +56,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# 라우터 자동 로드
+load_routers(app, "domain")
 
-
-# 도메인별 라우터
-from domain.answer import answer_router
-from domain.question import question_router
-from domain.user import user_router
-from domain.classroom import classroom_router
-from domain.activity import activity_router
-app.include_router(question_router.router)
-app.include_router(answer_router.router)
-app.include_router(user_router.router)
-app.include_router(classroom_router.router)
-app.include_router(activity_router.router)
-# 웹소켓 엔드포인트
-@app.websocket("/ws/{room_id}", "/ws")
-async def websocket_endpoint(websocket: WebSocket, room_id: str):
-    await manager.connect(websocket, room_id)
-    try:
-        while True:
-            data = await websocket.receive_text()
-            logging.info(f"Received data: {data} from room: {room_id}")
-            await manager.broadcast(f"Room {room_id}: {data}", room_id)
-    except WebSocketDisconnect:
-        manager.disconnect(websocket, room_id)
-        logging.info(f"WebSocket disconnected from room: {room_id}")
-    except Exception as e:
-        logging.error(f"Unexpected error: {e}")  # 추가: 일반 예외 처리
-
-logging.basicConfig(level=logging.INFO)
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

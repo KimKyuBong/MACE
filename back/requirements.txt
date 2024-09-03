@@ -1,12 +1,12 @@
-fastapi
+fastapi[all]
 uvicorn
-pymongo
-sqlalchemy
+beanie
 motor
-pydantic
-pydantic-settings
 pytz
 PyJWT
 passlib
 bcrypt
 python-jose
+password-validator
+email-validator
+websockets

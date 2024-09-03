@@ -1,60 +1,76 @@
-from pydantic import BaseModel, Field, EmailStr, constr, validator
-from typing import Optional
-from bson import ObjectId
-from common import PyObjectId, CustomBaseModel
-from pydantic import field_validator, model_validator
+from beanie import Document, Indexed, PydanticObjectId
+from pydantic import BaseModel, Field
+from typing import Optional, Literal
+import bcrypt
+import re
 
-class UserCreate(CustomBaseModel):
-    username: EmailStr = Field(..., description="User's email address, used as a username.")
-    password: str = Field(..., min_length=8, description="Password must be at least 8 characters long and contain letters, numbers, and special characters.")
-    school: str = Field(..., description="Name of the school.")
-    studentId: Optional[str] = Field(None, description="Student ID in the format: year-grade-class-number, required if role is student.")
-    subject: Optional[str] = Field(None, description="Subject name, required if role is teacher.")
-    name: str = Field(..., description="Full name of the user.")
-    role: str = Field(..., description="Role of the user, e.g., student or teacher.")
+class User(Document):
+    id: PydanticObjectId = Field(alias="_id")
+    username: Indexed(str, unique=True)
+    password: str
+    school: str
+    name: str
+    role: Literal["student", "teacher"]
+    studentId: Optional[str] = None
+    subject: Optional[str] = None
 
-    @field_validator('password')
-    def password_complexity(cls, value, info):
-        import re
-        if not re.match(r'^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$', value):
-            raise ValueError('Password must contain at least one letter, one number, and one special character.')
-        return value
+    class Settings:
+        name = "users"
+        indexes = [
+            "username",
+        ]
 
-    @field_validator('username', 'school', 'name', 'role')
-    def not_empty(cls, value, info):
-        if not value.strip():
-            raise ValueError(f'{info.field_name} field cannot be empty')
-        return value
+    @classmethod
+    async def get_by_username(cls, username: str):
+        return await cls.find_one(cls.username == username)
 
-    @field_validator('studentId')
-    def validate_student_id(cls, value, info):
-        if info.data.get('role') == 'student' and not value:
-            raise ValueError('studentId is required for students')
-        if info.data.get('role') == 'student' and len(value) != 4:
-            raise ValueError('studentId must be in the format: year-grade-class-number')
-        return value
+    def hash_password(self):
+        self.password = bcrypt.hashpw(self.password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
-    @field_validator('subject')
-    def validate_subject(cls, value, info):
-        if info.data.get('role') == 'teacher' and not value:
+    def verify_password(self, password: str) -> bool:
+        return bcrypt.checkpw(password.encode('utf-8'), self.password.encode('utf-8'))
+
+    @classmethod
+    def validate_student_id(cls, studentId: Optional[str], role: str) -> Optional[str]:
+        if role == 'student':
+            if not studentId:
+                raise ValueError('studentId is required for students')
+            if not re.match(r'^\d{4}-\d-\d-\d$', studentId):
+                raise ValueError('studentId must be in the format: year-grade-class-number')
+        return studentId
+
+    @classmethod
+    def validate_subject(cls, subject: Optional[str], role: str) -> Optional[str]:
+        if role == 'teacher' and not subject:
             raise ValueError('subject is required for teachers')
-        return value
+        return subject
 
-class UserLogin(CustomBaseModel):
-    username: EmailStr = Field(..., description="User's email address, used as a username.")
-    password: str = Field(..., description="User's password.")
+    def validate(self):
+        super().validate()
+        self.studentId = self.validate_student_id(self.studentId, self.role)
+        self.subject = self.validate_subject(self.subject, self.role)
 
-class User(CustomBaseModel):
-    id: PyObjectId = Field(default_factory=PyObjectId, alias='_id')
-    username: EmailStr = Field(..., description="User's email address, used as a username.")
-    school: str = Field(..., description="Name of the school.")
-    studentId: Optional[str] = Field(None, description="Student ID in the format: year-grade-class-number.")
-    subject: Optional[str] = Field(None, description="Subject name.")
-    name: str = Field(..., description="Full name of the user.")
-    role: str = Field(..., description="Role of the user, e.g., student or teacher.")
-    token: str = Field(..., description="Authentication token.")
+class UserResponse(BaseModel):
+    id: str
+    username: str
+    school: str
+    name: str
+    role: str
+    studentId: Optional[str] = None
+    subject: Optional[str] = None
 
-    class Config:
-        json_encoders = {
-            ObjectId: str
-        }
+
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+class TokenData(BaseModel):
+    username: Optional[str] = None
+
+class TokenResponse(BaseModel):
+    token: Token
+    user: UserResponse

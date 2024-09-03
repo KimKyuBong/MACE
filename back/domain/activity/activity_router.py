@@ -1,41 +1,38 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from motor.motor_asyncio import AsyncIOMotorDatabase
-from typing import List, Union
-from .activity_model import ActivityCreate, Activity
-from .activity_crud import create_activity, get_activities, delete_activity
-from database.db import get_db
-from auth import get_current_user
+from beanie import PydanticObjectId
+from typing import List  # List를 import
+from .activity_service import ActivityService
+from .activity_model import Activity
 from domain.user.user_model import User
+from domain.user.user_service import UserService
 
 router = APIRouter(prefix="/api/activity")
 
 @router.post("/", response_model=Activity)
 async def create_activity_endpoint(
-    activity_data: ActivityCreate, 
-    db: AsyncIOMotorDatabase = Depends(get_db), 
-    user: User = Depends(get_current_user)
+    name: str, 
+    description: str, 
+    user: User = Depends(UserService.get_current_user)  # 사용자의 전체 정보를 가져옴
 ):
+    user_id = user.id  # 필요한 경우 여기서 사용자 ID를 참조
     if user.role != "teacher":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only teachers can create activities")
-    return await create_activity(db, activity_data)
+    return await ActivityService.create_activity_service(name, description, user_id)
 
-@router.get("/", response_model=Union[List[Activity], dict])
-async def get_activities_endpoint(
-    classroom_id: str = None, 
-    db: AsyncIOMotorDatabase = Depends(get_db)
-):
-    activities = await get_activities(db, classroom_id)
-    if isinstance(activities, str):
-        return {"message": activities}
-    return activities
+@router.get("/", response_model=List[Activity])
+async def get_activities_endpoint():
+    try:
+        activities = await ActivityService.get_activities_service()
+        return activities
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to fetch activities")
 
 @router.delete("/{activity_id}", response_model=dict)
 async def delete_activity_endpoint(
-    activity_id: str, 
-    db: AsyncIOMotorDatabase = Depends(get_db), 
-    user: User = Depends(get_current_user)
+    activity_id: PydanticObjectId, 
+    user: User = Depends(UserService.get_current_user)
 ):
     if user.role != "teacher":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only teachers can delete activities")
-    await delete_activity(db, activity_id)
-    return {"message": "Activity deleted"}
+    await ActivityService.delete_activity_service(activity_id)
+    return {"message": "Activity deleted successfully"}

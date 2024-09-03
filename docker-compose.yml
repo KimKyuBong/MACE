@@ -1,17 +1,17 @@
-version: '3'  # Docker Compose 파일의 버전을 지정
-services:  # 실행할 서비스 목록을 정의
+version: '3' # Docker Compose 파일의 버전을 지정
+services: # 실행할 서비스 목록을 정의
   db:
     image: mongo:latest
     container_name: mace_db
     restart: always
     ports:
-      - "27017:27017"
+      - '27017:27017'
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: betterthendesmos
     volumes:
       - ./db:/data/db
-      
+
   back:
     build: ./back
     container_name: mace_back
@@ -31,10 +31,7 @@ services:  # 실행할 서비스 목록을 정의
     working_dir: /app
     volumes:
       - ./front:/app
-      - /app/node_modules # node_modules는 볼륨 마운트하지 않음
-    environment:
-      - REACT_APP_API_SERVER_URL=https://mace.kbnet.kr/api
-      - REACT_APP_WEBSOCKET_SERVER_URL=wss://mace.kbnet.kr/ws
+      - ./front/node_modules:/app/node_modules # node_modules는 볼륨 마운트하지 않음
     command:
       - sh
       - -c
