@@ -37,16 +37,15 @@ class ConnectionManager:
             self.disconnect(websocket, room_id)
             logging.info(f"WebSocket disconnected from {room_id}")
 
+
 manager = ConnectionManager()
-
-
 
 
 def prepare_broadcast_data(message, event_type):
     """Prepare data for broadcasting new questions."""
     # 한국 표준시 (KST) 시간대를 설정합니다.
-    KST = timezone('Asia/Seoul')
-    
+    KST = timezone("Asia/Seoul")
+
     # UTC 시간을 KST 시간대로 변환합니다.
     create_date_utc = message["create_date"]
     create_date_kst = create_date_utc.astimezone(KST)
@@ -55,8 +54,8 @@ def prepare_broadcast_data(message, event_type):
         "type": event_type,
         "data": {
             "_id": str(message["_id"]),
-            "create_date": create_date_kst.strftime("%Y-%m-%d %H:%M:%S")
-        }
+            "create_date": create_date_kst.strftime("%Y-%m-%d %H:%M:%S"),
+        },
     }
     for i in ["subject", "content"]:
         if message.get(i) is not None:

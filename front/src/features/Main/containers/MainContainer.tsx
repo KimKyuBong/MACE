@@ -1,15 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from 'features/Auth/contexts/AuthContext';
 import ClassroomCreateForm from 'features/Classroom/components/ClassroomCreateForm';
 import ClassroomListContainer from 'features/Classroom/containers/ClassroomListContainer';
 import useWebSocket from 'features/Common/hooks/useWebSocket';
-import { Link, useNavigate } from 'react-router-dom';
-import { Classroom } from 'features/Classroom/ClassroomInterfaces';
+import { useNavigate } from 'react-router-dom';
+import type { Classroom } from 'features/Classroom/ClassroomInterfaces';
 import { getClassrooms, joinClassroom } from 'features/Main/MainService';
 
 const MainContainer: React.FC = () => {
   const { user, handleLogout } = useAuth();
-  const { lastMessage, isConnected } = useWebSocket('/classrooms');
+  const { lastMessage } = useWebSocket('/classrooms');
   const [notifications, setNotifications] = useState<string[]>([]);
   const [showCreateForm, setShowCreateForm] = useState<boolean>(false);
   const [classrooms, setClassrooms] = useState<Classroom[]>([]);
@@ -24,27 +25,32 @@ const MainContainer: React.FC = () => {
   }, [lastMessage]);
 
   useEffect(() => {
+    console.log('useEffect 실행됨');
+
     const fetchData = async () => {
-      if (user?.token) {
-        try {
-          const data = await getClassrooms(user.token);
-          setClassrooms(data);
-        } catch (err) {
-          if (err instanceof Error) {
-            setError(err.message); // 에러 메시지를 설정
-          } else {
-            setError('An unknown error occurred');
-          }
-        } finally {
-          setLoading(false);
+      console.log('getClassrooms 호출 직전');
+      try {
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+          throw new Error('No access token found');
         }
-      } else {
+        const data = await getClassrooms(token);
+        console.log('getClassrooms 완료, 받은 데이터:', data);
+        setClassrooms(data);
+      } catch (err) {
+        console.error('getClassrooms 에러 발생:', err);
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError('An unknown error occurred');
+        }
+      } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [user]);
+  }, []);
 
   const handleLoginClick = () => navigate('/login');
   const handleRegisterClick = () => navigate('/register');
@@ -55,7 +61,11 @@ const MainContainer: React.FC = () => {
       return;
     }
     try {
-      await joinClassroom(classroomId, user.token);
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        throw new Error('No access token found');
+      }
+      await joinClassroom(classroomId, token);
       alert('Classroom joined successfully!');
     } catch (err) {
       alert('Failed to join classroom');
@@ -64,10 +74,6 @@ const MainContainer: React.FC = () => {
   const handleViewClassroom = (classroomId: string) => {
     navigate(`/classrooms/${classroomId}`);
   };
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <div className="container">
@@ -80,6 +86,7 @@ const MainContainer: React.FC = () => {
                 {user.username} ({user.role})
               </span>
               <button
+                type="button"
                 className="btn btn-outline-danger ml-2"
                 onClick={handleLogout}
               >
@@ -89,12 +96,14 @@ const MainContainer: React.FC = () => {
           ) : (
             <>
               <button
+                type="button"
                 className="btn btn-outline-primary mr-2"
                 onClick={handleLoginClick}
               >
                 Login
               </button>
               <button
+                type="button"
                 className="btn btn-outline-secondary"
                 onClick={handleRegisterClick}
               >
@@ -114,6 +123,7 @@ const MainContainer: React.FC = () => {
           {user.role === 'teacher' && (
             <>
               <button
+                type="button"
                 className="btn btn-primary mb-3"
                 onClick={handleCreateClassroomClick}
               >
@@ -122,44 +132,33 @@ const MainContainer: React.FC = () => {
               {showCreateForm && <ClassroomCreateForm />}
             </>
           )}
-          {error ? (
-            <div>{error}</div>
-          ) : (
-            <>
-              <ClassroomListContainer
-                classrooms={classrooms}
-                user={user}
-                onJoinClassroom={handleJoinClassroom}
-                onViewClassroom={handleViewClassroom}
-              />
-              {classrooms.length === 0 && <p>No classrooms available.</p>}
-            </>
-          )}
         </>
       ) : (
+        <h2>Please log in or register to join a classroom</h2>
+      )}
+
+      {loading ? (
+        <div>Loading...</div>
+      ) : error ? (
+        <div>Error: {error}</div>
+      ) : (
         <>
-          <h2>Please log in or register to join a classroom</h2>
-          {error ? (
-            <div>{error}</div>
-          ) : (
-            <>
-              <ClassroomListContainer
-                classrooms={classrooms}
-                user={user}
-                onJoinClassroom={handleJoinClassroom}
-                onViewClassroom={handleViewClassroom}
-              />
-              {classrooms.length === 0 && <p>No classrooms available.</p>}
-            </>
-          )}
+          <ClassroomListContainer
+            classrooms={classrooms}
+            user={user}
+            onJoinClassroom={handleJoinClassroom}
+            onViewClassroom={handleViewClassroom}
+          />
+          {classrooms.length === 0 && <p>No classrooms available.</p>}
         </>
       )}
+
       {notifications.length > 0 && (
         <div className="notifications">
           <h2>Notifications</h2>
           <ul>
             {notifications.map((note, index) => (
-              <li key={index}>{note}</li>
+              <li key={`${note}-${index}`}>{note}</li>
             ))}
           </ul>
         </div>

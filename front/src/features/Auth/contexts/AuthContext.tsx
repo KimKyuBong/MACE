@@ -1,21 +1,15 @@
-import React, {
+import type React from 'react';
+import {
   createContext,
   useContext,
-  useState,
+  useState,type 
   ReactNode,
   useEffect,
-} from 'react';
-import { User, RegisterFormData } from 'features/Auth/AuthInterfaces';
+} from 'react'
+import type { User, RegisterFormData, AuthContextType, AuthResponse } from 'features/Auth/AuthInterfaces';
 import { login, register, getUserInfo } from 'features/Auth/AuthService';
 
-interface AuthContextType {
-  user: User | null;
-  error: string | null;
-  loading: boolean;
-  handleLogin: (username: string, password: string) => Promise<void>;
-  handleRegister: (formData: RegisterFormData) => Promise<void>;
-  handleLogout: () => void;
-}
+
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -43,11 +37,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const handleLogin = async (username: string, password: string) => {
     try {
       const userInfo = await login(username, password);
-      setUser(userInfo);
+      setUser(userInfo.user);
       setError(null);
     } catch (err) {
-      setError('Login failed. Please check your credentials.');
-      console.error('Login error:', err);
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('로그인에 실패했습니다. 다시 시도해 주세요.');
+      }
+      throw err; // 에러를 다시 던져서 LoginForm에서 처리할 수 있게 합니다.
     }
   };
 

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ErrorDetail } from 'features/Common/CommonInterfaces';
+import type { ErrorDetail } from 'features/Common/CommonInterfaces';
 import { postQuestion } from '../QuestionService';
 import QuestionForm from '../components/QuestionForm';
 import { useAuth } from 'features/Auth/contexts/AuthContext';
@@ -14,8 +15,8 @@ const QuestionCreateContainer: React.FC = () => {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!user){
-      alert('You must be loged in to join a classroom')
+    if (!user?.token) {
+      setError({ detail: { msg: 'You must be logged in to create a question' } });
       return;
     }
     try {

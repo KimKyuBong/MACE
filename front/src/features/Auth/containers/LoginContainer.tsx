@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { useAuth } from 'features/Auth/contexts/AuthContext';
 import LoginForm from 'features/Auth/components/LoginForm';
 

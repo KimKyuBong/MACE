@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { useAuth } from 'features/Auth/contexts/AuthContext';
 import { createClassroom } from 'features/Classroom/ClassroomService';
 
@@ -28,7 +29,11 @@ const ClassroomCreateForm: React.FC = () => {
     }
 
     try {
-      await createClassroom(classroomData, user.token);
+      if (user?.token) {
+        await createClassroom(classroomData, user.token);
+      } else {
+        throw new Error('User token is missing');
+      }
       alert('Classroom created successfully!');
       setClassroomData({ name: '', description: '' });
       setError(null);

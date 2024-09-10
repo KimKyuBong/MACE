@@ -38,23 +38,17 @@ class ClassroomRepository:
         return classroom
 
     @staticmethod
-    async def fetch_classroom_detail(classroom_id: ObjectId) -> ClassroomDetail:
-        classroom = await Classroom.get(classroom_id)
-        if not classroom:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Classroom not found")
-        
-        teacher = await User.get(classroom.teacher_id)
-        activities = await Activity.find(Activity.id.in_(classroom.activities)).to_list()
-        students = await User.find(User.id.in_(classroom.students)).to_list()
-        pending_students = await User.find(User.id.in_(classroom.pending_students)).to_list()
-
-        return ClassroomDetail(
-            **classroom.dict(),
-            teacher_name=teacher.name if teacher else None,
-            activities=[activity.name for activity in activities],
-            student_details=students,
-            pending_student_details=pending_students
-        )
+    async def fetch_all_classrooms() -> List[Classroom]:
+        logging.info("Attempting to fetch all classrooms")
+        try:
+            classrooms = await Classroom.find_all().to_list()
+            logging.info(f"Successfully fetched {len(classrooms)} classrooms")
+            for classroom in classrooms:
+                logging.debug(f"Fetched classroom: {classroom.dict()}")
+            return classrooms
+        except Exception as e:
+            logging.error(f"Error fetching classrooms: {str(e)}", exc_info=True)
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error fetching classrooms")
 
     @staticmethod
     async def update_classroom_data(classroom_id: ObjectId, name: str, description: str) -> Classroom:

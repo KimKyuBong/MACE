@@ -1,6 +1,6 @@
-import React from 'react';
+import type React from 'react';
+import { useState, useEffect } from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
-import { useAuth } from 'features/Auth/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { loginValidationSchema } from 'features/Auth/AuthValidation';
 import { Modal, Button } from 'react-bootstrap';
@@ -11,9 +11,16 @@ interface LoginFormProps {
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({ onLogin, error }) => {
-  const [showErrorModal, setShowErrorModal] = React.useState<boolean>(false);
-  const [errorMessage, setErrorMessage] = React.useState<string>('');
+  const [showErrorModal, setShowErrorModal] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>('');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (error) {
+      setErrorMessage(error);
+      setShowErrorModal(true);
+    }
+  }, [error]);
 
   const handleSubmit = async (values: {
     username: string;
@@ -22,8 +29,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, error }) => {
     try {
       await onLogin(values.username, values.password);
       navigate('/');
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Login failed. Please try again.');
+    } catch (err) {
+      setErrorMessage('An unexpected error occurred');
       setShowErrorModal(true);
     }
   };
@@ -85,5 +92,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, error }) => {
     </div>
   );
 };
+
 
 export default LoginForm;

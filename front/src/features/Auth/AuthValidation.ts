@@ -5,34 +5,38 @@ import * as Yup from 'yup';
 // 로그인 폼 유효성 검증 스키마
 export const loginValidationSchema = Yup.object().shape({
   username: Yup.string()
-    .email('Invalid email format. Please enter a valid email address.')
-    .required('Email is required'),
+    .email('유효하지 않은 이메일 형식입니다. 올바른 이메일 주소를 입력해 주세요.')
+    .required('이메일은 필수 입력 항목입니다.'),
   password: Yup.string()
-    .min(8, 'Password must be at least 8 characters long')
-    .required('Password is required'),
+    .min(8, '비밀번호는 최소 8자 이상이어야 합니다.')
+    .required('비밀번호는 필수 입력 항목입니다.'),
 });
 
-// 회원가입 폼 유효성 검증 스키마 (필요한 경우)
+// 조건부 필드 생성 함수 수정
+const conditionalField = (fieldName: string, condition: string, requiredMessage: string) => 
+  Yup.string().test({
+    name: `${fieldName}-required-for-${condition}`,
+    message: requiredMessage,
+    test: function (value) {
+      return this.parent.role !== condition || Boolean(value && value.length > 0);
+    }
+  });
+
+// 회원가입 폼 유효성 검증 스키마
 export const registerValidationSchema = Yup.object().shape({
-  school: Yup.string().required('School is required'),
-  studentId: Yup.string().when('role', {
-    is: (role: string) => role === 'student',
-    then: (schema) => schema.required('Student ID is required'),
-  }),
-  subject: Yup.string().when('role', {
-    is: (role: string) => role === 'teacher',
-    then: (schema) => schema.required('Subject is required'),
-  }),
-  name: Yup.string().required('Name is required'),
+  school: Yup.string().required('학교명은 필수 입력 항목입니다.'),
+  studentId: conditionalField('studentId', 'student', '학번은 필수 입력 항목입니다.'),
+  subject: conditionalField('subject', 'teacher', '과목은 필수 입력 항목입니다.'),
+  name: Yup.string().required('이름은 필수 입력 항목입니다.'),
   username: Yup.string()
-    .email('Invalid email format')
-    .required('Email is required'),
+    .email('유효하지 않은 이메일 형식입니다.')
+    .required('이메일은 필수 입력 항목입니다.'),
   password: Yup.string()
-    .min(8, 'Password must be at least 8 characters long')
+    .min(8, '비밀번호는 최소 8자 이상이어야 합니다.')
     .matches(
       /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-      'Password must contain at least one letter, one number, and one special character'
+      '비밀번호는 최소 하나의 문자, 숫자, 특수문자를 포함해야 합니다.'
     )
-    .required('Password is required'),
-  role: Yup.string().required('Role is required'),
+    .required('비밀번호는 필수 입력 항목입니다.'),
+  role: Yup.string().required('역할은 필수 선택 항목입니다.'),
 });

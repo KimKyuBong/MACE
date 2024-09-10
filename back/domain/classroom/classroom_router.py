@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 from beanie import PydanticObjectId
 from .classroom_service import ClassroomService
@@ -24,15 +25,19 @@ async def create_classroom_endpoint(
         )
         return new_classroom
     except Exception as e:
+        logging.error(f"Failed to create classroom: {str(e)}", exc_info=True)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to create classroom")
 
 @router.get("/", response_model=List[Classroom])
 async def get_classrooms_endpoint():
+    logging.info("Received request to get all classrooms")
     try:
         classrooms = await ClassroomService.get_all_classrooms()
+        logging.info(f"Successfully retrieved {len(classrooms)} classrooms")
         return classrooms
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to fetch classrooms")
+        logging.error(f"Failed to fetch classrooms: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to fetch classrooms: {str(e)}")
 
 @router.get("/{classroom_id}", response_model=ClassroomDetail)
 async def get_classroom_detail_endpoint(classroom_id: PydanticObjectId):
@@ -42,6 +47,7 @@ async def get_classroom_detail_endpoint(classroom_id: PydanticObjectId):
     except HTTPException as he:
         raise he
     except Exception as e:
+        logging.error(f"Failed to fetch classroom details: {str(e)}", exc_info=True)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to fetch classroom details")
 
 @router.put("/{classroom_id}", response_model=Classroom)
@@ -62,6 +68,7 @@ async def update_classroom_endpoint(
     except HTTPException as he:
         raise he
     except Exception as e:
+        logging.error(f"Failed to update classroom: {str(e)}", exc_info=True)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to update classroom")
 
 @router.delete("/{classroom_id}", response_model=dict)
@@ -77,6 +84,7 @@ async def delete_classroom_endpoint(
     except HTTPException as he:
         raise he
     except Exception as e:
+        logging.error(f"Failed to delete classroom: {str(e)}", exc_info=True)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to delete classroom")
 
 @router.post("/join/{classroom_id}", response_model=dict)
@@ -92,6 +100,7 @@ async def request_join_classroom_endpoint(
     except HTTPException as he:
         raise he
     except Exception as e:
+        logging.error(f"Failed to send join request: {str(e)}", exc_info=True)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to send join request")
 
 @router.post("/approve_join/{classroom_id}", response_model=dict)
@@ -108,4 +117,5 @@ async def approve_join_classroom_endpoint(
     except HTTPException as he:
         raise he
     except Exception as e:
+        logging.error(f"Failed to approve join request: {str(e)}", exc_info=True)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to approve join request")

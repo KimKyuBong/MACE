@@ -36,3 +36,20 @@ export interface AuthContextType {
   handleRegister: (formData: RegisterFormData) => Promise<void>;
   handleLogout: () => void;
 }
+
+export interface AuthResponse {
+  token: {
+    access_token: string;
+    token_type: string;
+  };
+  user: User;
+}
+
+export interface AuthContextType {
+  user: User | null;
+  error: string | null;
+  loading: boolean;
+  handleLogin: (username: string, password: string) => Promise<void>;
+  handleRegister: (formData: RegisterFormData) => Promise<void>;
+  handleLogout: () => void;
+}

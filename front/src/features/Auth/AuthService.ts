@@ -1,12 +1,10 @@
 import fastapi from 'features/Common/utils/fastapi';
-import { User, RegisterFormData } from 'features/Auth/AuthInterfaces';
+import type { User, RegisterFormData, AuthResponse } from 'features/Auth/AuthInterfaces';
 
-interface AuthResponse {
-  token: {
-    access_token: string;
-    token_type: string;
-  };
-  user: User;
+// ApiError 인터페이스 정의
+interface ApiError {
+  message: string;
+  // 필요한 경우 다른 필드 추가
 }
 
 // Helper function to store token
@@ -23,7 +21,7 @@ const getStoredToken = (): string | null => {
 export const login = async (
   username: string,
   password: string
-): Promise<User> => {
+): Promise<AuthResponse> => {
   return new Promise((resolve, reject) => {
     fastapi(
       'post',
@@ -31,15 +29,12 @@ export const login = async (
       { username, password },
       undefined,
       (response: AuthResponse) => {
-        // 토큰을 파싱하여 로컬 스토리지에 저장
         const { access_token } = response.token;
         storeToken(access_token);
-
-        // 사용자 정보를 반환
-        resolve(response.user);
+        resolve(response);
       },
-      (error: any) => {
-        reject(new Error(error?.message || 'Invalid username or password.'));
+      (error: ApiError) => {
+        reject(new Error(error.message || '사용자 이름 또는 비밀번호가 잘못되었습니다.'));
       }
     );
   });
@@ -54,17 +49,12 @@ export const register = async (formData: RegisterFormData): Promise<User> => {
       formData,
       undefined,
       (response: AuthResponse) => {
-        // 토큰을 파싱하여 로컬 스토리지에 저장
         const { access_token } = response.token;
         storeToken(access_token);
-
-        // 사용자 정보를 반환
         resolve(response.user);
       },
-      (error: any) => {
-        reject(
-          new Error(error?.message || 'Registration failed. Please try again.')
-        );
+      (error: ApiError) => {
+        reject(new Error(error.message || '회원가입에 실패했습니다. 다시 시도해 주세요.'));
       }
     );
   });
@@ -72,10 +62,10 @@ export const register = async (formData: RegisterFormData): Promise<User> => {
 
 // Get User Info function
 export const getUserInfo = async (): Promise<User | null> => {
-  const token = getStoredToken(); // Retrieve the stored token
+  const token = getStoredToken();
   if (!token) {
     console.warn('No token found');
-    return null; // Return null instead of throwing an error
+    return null;
   }
 
   return new Promise<User | null>((resolve, reject) => {
@@ -85,11 +75,11 @@ export const getUserInfo = async (): Promise<User | null> => {
       {},
       token,
       (json: User) => {
-        resolve(json); // Resolve with the user data
+        resolve(json);
       },
-      (error: any) => {
-        console.error('Failed to fetch user information:', error);
-        resolve(null); // Return null if fetching fails
+      (error: ApiError) => {
+        console.error('사용자 정보를 가져오는데 실패했습니다:', error.message);
+        resolve(null);
       }
     );
   });

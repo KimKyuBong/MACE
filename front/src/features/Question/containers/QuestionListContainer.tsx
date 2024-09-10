@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Question } from '../QuestionInterfaces';
+import type { Question } from '../QuestionInterfaces';
 import QuestionList from 'features/Question/components/QuestionList';
 import { fetchQuestions } from '../QuestionService';
 import useWebSocket from 'features/Common/hooks/useWebSocket';
@@ -10,7 +11,7 @@ const QuestionListContainer: React.FC = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
-  const { lastMessage, isConnected } = useWebSocket('/question');
+  const { lastMessage } = useWebSocket('/question');  // isConnected 제거
 
   useEffect(() => {
     const loadQuestions = async () => {
